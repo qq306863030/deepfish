@@ -40,7 +40,24 @@ class BaseAIService {
         role: 'system',
         content: `You are an AI assistant that can use tools to accomplish tasks. The current working directory is ${currentDir}, and the operating system is ${osType}. Use the available tools to achieve the user's goal.
 
-IMPORTANT: When you have successfully completed the task, you MUST NOT call any more tools. Simply provide a summary of what was done in your response content and stop.`
+IMPORTANT: When you have successfully completed the task, you MUST NOT call any more tools. Simply provide a summary of what was done in your response content and stop.
+
+IMPORTANT: When using the executeJSCode function, if you need to import custom JS modules, you MUST use absolute paths.
+
+IMPORTANT: To improve efficiency and reduce unnecessary round trips, STRONGLY prefer using the executeJSCode function combined with Node.js code to accomplish tasks quickly in a single or minimal number of calls. Avoid multiple back-and-forth interactions when a single comprehensive Node.js script can accomplish the goal. This saves time and network resources.
+
+IMPORTANT: For file operations, ALWAYS check file information (size, line count) BEFORE reading file content using executeJSCode and Node.js fs module. If a file is large (>100KB or many lines), do NOT retrieve the entire file content into the conversation. Instead: 1) Use Node.js to process the file directly (read specific sections, search for patterns, parse and extract data), 2) Run transformations in Node.js scripts, 3) Only return the necessary results/summary, not the entire file content.
+
+IMPORTANT: When handling large files (e.g., novels, long documents), use a chunked approach:
+1. First, check the file size and structure
+2. Process the file in manageable chunks (e.g., 10KB-50KB per chunk)
+3. For translation tasks, translate one chunk at a time
+4. Combine the results at the end
+5. Use Node.js fs module to read specific file ranges using Buffer operations
+
+IMPORTANT: The system will automatically truncate any tool response larger than 10KB. If you need to process large files, use the executeJSCode function to implement chunked processing directly in Node.js without returning the entire file content to the conversation.
+
+TIP: You can use the executeJSCode function to run Node.js code for complex logic, and the executeCommand function to run system commands using command-line tools that are already installed on the system. This includes tools like git, npm, ls, mkdir, and other system utilities. These tools can help you quickly accomplish your goals.`
       },
       {
         role: 'user',
@@ -86,10 +103,31 @@ IMPORTANT: When you have successfully completed the task, you MUST NOT call any 
                 if (!result) {
                   result = 'function executed successfully!'
                 }
+                // 限制工具调用结果的大小，避免超出API限制
+                let toolContent = JSON.stringify(result);
+                const MAX_CONTENT_SIZE = 10000; // 10KB限制
+                if (toolContent.length > MAX_CONTENT_SIZE) {
+                  // 检查是否是文件内容
+                  if (typeof result === 'string' && result.length > MAX_CONTENT_SIZE) {
+                    // 对于大文件内容，只保留文件信息和大小
+                    toolContent = JSON.stringify({
+                      fileContent: `[TRUNCATED: File content too large (${Math.round(result.length / 1024)}KB). Use file processing tools to handle large files in chunks.`,
+                      fileSize: result.length,
+                      fileSizeKB: Math.round(result.length / 1024)
+                    });
+                  } else {
+                    // 对于其他大结果，进行截断
+                    toolContent = JSON.stringify({
+                      truncated: true,
+                      message: 'Result too large. Please use more specific queries or file processing tools.',
+                      preview: toolContent.substring(0, MAX_CONTENT_SIZE) + '...'
+                    });
+                  }
+                }
                 messages.push({
                   role: 'tool',
                   tool_call_id: id,
-                  content: JSON.stringify(result)
+                  content: toolContent
                 })
               } catch (error) {
                 messages.push({

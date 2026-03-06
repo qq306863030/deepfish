@@ -6,7 +6,7 @@ const fs = require('fs-extra')
 // 执行系统命令
 async function executeCommand(command) {
   return new Promise((resolve, reject) => {
-    logInfo(`Executing system command: ${command}`)
+    logInfo(`Executing system command:\n ${command}`)
 
     const childProcess = spawn(command, {
       shell: true,
@@ -34,6 +34,7 @@ async function executeCommand(command) {
 
 // 请求ai服务
 async function requestAI(systemDescription, prompt) {
+  logInfo(`Requesting AI`)
   if (
     typeof systemDescription === 'object' &&
     systemDescription.systemDescription
@@ -55,7 +56,9 @@ async function requestAI(systemDescription, prompt) {
 
 // 执行js代码
 async function executeJSCode(code) {
-  console.log(`Executing JavaScript code: ${code}`)
+  logInfo('Executing JavaScript code: ')
+  logInfo(code)
+
   try {
     const { toolFunctions } = this.extensionManager.extensions
     const Func = new Function(
@@ -309,7 +312,7 @@ const toolDescriptions = [
     type: 'function',
     function: {
       name: 'executeJSCode',
-      description: '执行JavaScript代码。代码中可以直接调用工作流工具函数(通过Tools命名空间直接调用，无需引入模块，注意这些函数都是异步函数，调用时需要注意,例如await Tools.createDirectory("新建目录"))，从而与其他工具协同工作',
+      description: '执行JavaScript代码。代码中可以直接调用工作流工具函数(通过Tools命名空间直接调用，无需引入模块，注意这些函数都是异步函数，调用时需要注意,例如await Tools.createDirectory("新建目录"))，从而与其他工具协同工作。如果需要引入自定义JS模块，必须使用绝对路径。',
       parameters: {
         type: 'object',
         properties: {
