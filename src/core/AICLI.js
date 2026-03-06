@@ -38,6 +38,7 @@ class AICLI {
     }
     // 初始化扩展
     this.extensionManager = new ExtensionManager(this);
+    this.Tools = this.extensionManager.toolFunctions
   }
   // 单轮对话
   async run(userPrompt) {
