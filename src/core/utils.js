@@ -70,13 +70,32 @@ function log(msg, color) {
 
 // 添加扩展
 function addExtensionToConfig(fileName) {
-  const userConfigPath = path.join(os.homedir(), ".ai-cmd.config.js");
+  // 检查 fileName 是否为空
+  if (!fileName) {
+    logError("Extension file name is required.");
+    return;
+  }
   const filePath = path.resolve(process.cwd(), fileName);
+  // 判断是否路径是文件还是目录
+  if (fs.statSync(filePath).isDirectory()) {
+    // 扫描目录和子目录下所有js、cjs文件
+    const files = traverseFiles()
+    const jsFiles = files.filter((file) => file.endsWith(".js") || file.endsWith(".cjs"));
+    jsFiles.forEach((jsFile) => {
+      // 读取文件，查询文件内是否存在‘toolDescriptions’和‘toolFunctions’
+      const fileContent = fs.readFileSync(jsFile, "utf-8");
+      if (fileContent.includes("toolDescriptions") && fileContent.includes("toolFunctions")) {
+        addExtensionToConfig(jsFile);
+      }
+    });
+    return;
+  }
   // 判断文件是否存在
   if (!fs.existsSync(filePath)) {
     logError(`File not found: ${filePath}`);
     return;
   }
+  const userConfigPath = path.join(os.homedir(), ".ai-cmd.config.js");
   if (!fs.existsSync(userConfigPath)) {
     logError(
       `User config file not found: ${userConfigPath}. Please run 'ai config reset' first.`,
@@ -89,12 +108,14 @@ function addExtensionToConfig(fileName) {
   } else {
     userConfig.extensions = [filePath];
   }
+  // 数组去重
+  userConfig.extensions = [...new Set(userConfig.extensions)];
   fs.writeFileSync(
     userConfigPath,
     `module.exports = ${JSON.stringify(userConfig, null, 2)}`,
   );
   logSuccess(
-    `Extension added to config: ${filePath}.You can run 'ai ext ls' to view the changes.`,
+    `Extension added to config: ${filePath}.`,
   );
 }
 
@@ -169,6 +190,38 @@ function viewExtensionsFromConfig() {
     console.log("=".repeat(50));
   } else {
     logSuccess(`No extensions in config.`);
+  }
+}
+
+
+function traverseFiles() {
+  try {
+    const currentDir = process.cwd();
+    const allFiles = [];
+    const currentItems = fs.readdirSync(currentDir, { withFileTypes: true });
+    for (const item of currentItems) {
+      const itemPath = path.join(currentDir, item.name);
+      if (item.isFile()) {
+        allFiles.push(itemPath);
+        continue;
+      }
+      if (item.isDirectory()) {
+        try {
+          const subItems = fs.readdirSync(itemPath, { withFileTypes: true });
+          for (const subItem of subItems) {
+            if (subItem.isFile()) {
+              allFiles.push(path.join(itemPath, subItem.name));
+            }
+          }
+        } catch (subErr) {
+          console.warn(`读取子目录失败 ${itemPath}：${subErr.message}`);
+        }
+      }
+    }
+    return allFiles;
+  } catch (err) {
+    console.error(`遍历目录失败：${err.message}`);
+    return [];
   }
 }
 

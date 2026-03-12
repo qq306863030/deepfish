@@ -1,6 +1,6 @@
 # AI Command Tool
 
-An AI command-line tool that processes operating system commands and manipulates files through natural language processing, supporting Ollama, DeepSeek, and OpenAI.
+An AI command-line tool that converts natural language instructions into operating system commands and file operations, supporting Ollama, DeepSeek, and other models compatible with the OpenAI API specification.
 
 ## Language
 
@@ -13,6 +13,7 @@ An AI command-line tool that processes operating system commands and manipulates
 ## Repository
 
 [GitHub: qq306863030/ai-cmd-tool](https://github.com/qq306863030/ai-cmd-tool)
+[GitHub: qq306863030/ai-cmd-tool-extensions](https://github.com/qq306863030/ai-cmd-tool-extensions)
 
 ## Installation
 
@@ -41,7 +42,7 @@ npm link
 ```bash
 ai config add # Enter "deepseek" as the name, and input your DeepSeek API key
 ai use deepseek
-ai "Help me write a science fiction novel"
+ai Write a future science fiction article about future technology in the current directory, output in markdown format
 ```
 
 ## Configuration
@@ -243,11 +244,13 @@ For production use or complex tasks, we recommend using DeepSeek, OpenAI service
 
 ## Extension Development
 
-Extensions allow you to add custom functions that the AI can use in its workflow.
+Extensions allow you to add custom functions that the AI can use in its workflow, for complex projects, you can try to generate extensions first using this program, then add them using "ai ext add <extension filename>", and finally complete the task using the program.
 
 ### Creating an Extension
 
-Extensions should export an object with `toolDescriptions` (array of tool descriptions) and `toolFunctions` (object of functions).
+Extensions should export an object with `toolDescriptions` (array of tool descriptions) and `toolFunctions` (object of functions). You can view the [example extension](https://github.com/qq306863030/ai-cmd-tool-extensions) for reference.
+en: You can create a weather extension tool by using the command 'ai "Get current weather information for a city To weather.js'
+
 
 ```javascript
 // Example extension: Weather Extension
