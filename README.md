@@ -30,7 +30,38 @@
 
 - [English](README.md) | [中文](README_CN.md)
 
-[TOC]
+## Table of Contents
+
+- [Table of Contents](#table-of-contents)
+- [1. Introduction](#1-introduction)
+- [2. Installation](#2-installation)
+  - [Prerequisites](#prerequisites)
+  - [Installation via npm](#installation-via-npm)
+  - [Installation from Source](#installation-from-source)
+- [3. Quick Start](#3-quick-start)
+- [4. Configuration](#4-configuration)
+  - [Initial Setup](#initial-setup)
+  - [Configuration Commands](#configuration-commands)
+  - [Configuration File Structure](#configuration-file-structure)
+- [5. Usage](#5-usage)
+  - [Interactive Mode](#interactive-mode)
+  - [Direct Command Mode](#direct-command-mode)
+  - [Usage Examples](#usage-examples)
+- [6. Extension Development](#6-extension-development)
+  - [Creating an Extension](#creating-an-extension)
+  - [Registering Extensions](#registering-extensions)
+- [7. Recommendations](#7-recommendations)
+  - [AI Service Selection](#ai-service-selection)
+- [8. Usage Notes](#8-usage-notes)
+  - [Using Relative Paths](#using-relative-paths)
+- [9. Troubleshooting](#9-troubleshooting)
+  - [Configuration Issues](#configuration-issues)
+  - [AI Service Connection](#ai-service-connection)
+  - [Extension Not Loading](#extension-not-loading)
+- [10. Contributing](#10-contributing)
+- [11. License](#11-license)
+- [12. Support](#12-support)
+
 
 
 ## 1. Introduction
@@ -258,7 +289,7 @@ module.exports = {
 };
 ```
 
-#### Registering Extensions
+### Registering Extensions
 
 **Method 1: Using Command Line**
 

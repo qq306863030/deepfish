@@ -1,3 +1,12 @@
+/**
+ * @Author: Roman 306863030@qq.com
+ * @Date: 2026-03-17 11:59:19
+ * @LastEditors: Roman 306863030@qq.com
+ * @LastEditTime: 2026-03-17 19:33:24
+ * @FilePath: \deepfish\src\core\extension\DefaultExtension.js
+ * @Description: 默认扩展函数
+ * @
+ */
 const path = require("path");
 const { logError, logSuccess, logInfo, getConfigPath } = require("../utils");
 const fs = require("fs-extra");

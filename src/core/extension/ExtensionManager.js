@@ -1,3 +1,12 @@
+/**
+ * @Author: Roman 306863030@qq.com
+ * @Date: 2026-03-17 11:59:19
+ * @LastEditors: Roman 306863030@qq.com
+ * @LastEditTime: 2026-03-17 19:33:39
+ * @FilePath: \deepfish\src\core\extension\ExtensionManager.js
+ * @Description: 扩展函数管理
+ * @
+ */
 const { descriptions, functions } = require('./DefaultExtension')
 const path = require('path')
 const fs = require('fs-extra')
