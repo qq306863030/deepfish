@@ -1,7 +1,7 @@
 const path = require('path')
 const os = require('os')
 const fs = require('fs-extra')
-const { logError, logSuccess } = require('../core/utils')
+const { logError, logSuccess } = require('../core/utils/log')
 
 // 获取默认配置
 function getDefaultConfig() {

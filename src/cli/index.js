@@ -3,13 +3,10 @@ const { program } = require("commander");
 const inquirer = require("inquirer");
 const fs = require("fs");
 const AICLI = require("../core/AICLI");
-const { logSuccess, logError } = require("../core/utils");
+const { logSuccess, logError } = require("../core/utils/log");
 const { getDefaultConfig, addExtensionToConfig, removeExtensionFromConfig, viewExtensionsFromConfig, getConfigPath } = require("./configTools");
 const userConfigPath = getConfigPath()
 
-// ai config 相关命令
-
-// ai ext 相关命令
 
 // ai 相关命令
 
@@ -284,30 +281,7 @@ program
     program.prompt = Array.isArray(prompt) ? prompt.join(" ") : prompt || "";
   });
 
-const extCommand = program
-  .command("ext")
-  .description("Extension management commands");
 
-extCommand
-  .command("add <filename>")
-  .description("Add extension tool to the configuration")
-  .action((filename) => {
-    addExtensionToConfig(filename);
-  });
-
-extCommand
-  .command("del <filename>")
-  .description("Remove extension tool from the configuration")
-  .action((filename) => {
-    removeExtensionFromConfig(filename);
-  });
-
-extCommand
-  .command("ls")
-  .description("List all extension tools in the configuration")
-  .action(() => {
-    viewExtensionsFromConfig();
-  });
 
 const configCommand = program
   .command("config")
