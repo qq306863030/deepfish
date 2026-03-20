@@ -2,7 +2,7 @@
  * @Author: Roman 306863030@qq.com
  * @Date: 2026-03-17 11:59:19
  * @LastEditors: Roman 306863030@qq.com
- * @LastEditTime: 2026-03-20 15:33:28
+ * @LastEditTime: 2026-03-20 16:33:23
  * @FilePath: \deepfish\src\core\extension\DefaultExtension.js
  * @Description: 默认扩展函数
  * @
@@ -153,6 +153,7 @@ async function getExtensionFileRule(goal) {
 2. package.json配置：
    - name字段值：@deepfish-ai/项目功能名称（替换「项目功能名称」为实际功能名）
    - git仓库地址：固定为 https://github.com/qq306863030/deepfish-extensions.git
+   - author设置为"DeepFish AI",
 3. 主文件：项目入口文件必须命名为index.js
 4. 文档文件：项目根目录需新增2个文档文件：
    - README_CN.md（中文说明文档）
@@ -708,7 +709,7 @@ const descriptions = [
     type: "function",
     function: {
       name: "getAiConfig",
-      description: "获取ai的配置参数",
+      description: "获取ai请求接口的配置参数",
       parameters: {
         type: "object",
         properties: {},
@@ -720,7 +721,7 @@ const descriptions = [
     type: "function",
     function: {
       name: "getAiConfigPath",
-      description: "获取ai的配置文件地址",
+      description: "获取ai请求接口配置的文件地址",
       parameters: {
         type: "object",
         properties: {},
