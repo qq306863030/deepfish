@@ -9,6 +9,8 @@ class AIService {
     this.aiConfig = aiCli.aiConfig;
     this.name = this.config.currentAi || "I";
     this.config.name = this.name;
+    this.config.type = this.type;
+    this.aiConfig.type = this.type;
     this.client = new OpenAI({
       baseURL: this.aiConfig.baseUrl,
       apiKey: this.aiConfig.apiKey || "",

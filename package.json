@@ -1,7 +1,7 @@
 {
   "name": "deepfish-ai",
   "version": "1.0.11",
-  "description": "An AI command-line tool that converts natural language instructions into operating system commands and file operations, supporting Ollama, DeepSeek, and other models compatible with the OpenAI API specification.",
+  "description": "This is an AI-driven command-line tool built on Node.js, equipped with AI agent and workflow capabilities. It is compatible with a wide range of AI models, can convert natural language into cross-system terminal and file operation commands, and features high extensibility. It supports complex tasks such as translation, content creation, and format conversion, while allowing custom extensions to be automatically generated via AI.",
   "main": "src/index.js",
   "bin": {
     "ai": "src/cli/index.js"
@@ -12,6 +12,8 @@
   "keywords": [
     "ai",
     "deepseek",
+    "agent",
+    "assistant",
     "cli",
     "command-line",
     "cmd",
@@ -23,12 +25,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/qq306863030/deepfish.git"
+    "url": "https://github.com/qq306863030/deepfish-ai.git"
   },
   "bugs": {
-    "url": "https://github.com/qq306863030/deepfish/issues"
+    "url": "https://github.com/qq306863030/deepfish-ai/issues"
   },
-  "homepage": "https://github.com/qq306863030/deepfish#readme",
+  "homepage": "https://github.com/qq306863030/deepfish-ai#readme",
   "dependencies": {
     "axios": "^1.13.5",
     "chalk": "^4.1.0",

@@ -2,8 +2,8 @@
  * @Author: Roman 306863030@qq.com
  * @Date: 2026-03-17 09:12:22
  * @LastEditors: Roman 306863030@qq.com
- * @LastEditTime: 2026-03-17 10:03:21
- * @FilePath: \src\core\ai-services\AiWorker\AiTools.js
+ * @LastEditTime: 2026-03-20 16:28:53
+ * @FilePath: \deepfish\src\core\ai-services\AiWorker\AiTools.js
  * @Description: 对话初始化、对话请求
  * @
  */
@@ -47,6 +47,7 @@ async function aiRequestSingle(
   aiConfig,
   systemDescription,
   prompt,
+  isOnline = false,
 ) {
   const messages = []
   messages.push({
@@ -57,11 +58,12 @@ async function aiRequestSingle(
     role: 'user',
     content: prompt,
   })
-  const response = await openAiClient.chat.completions.create({
+  const opt = {
     messages: messages,
     ...aiConfig,
-    stream: false
-  })
+    stream: false,
+  }
+  const response = await openAiClient.chat.completions.create(opt)
   return response.choices[0].message.content
 }
 /**
@@ -183,6 +185,7 @@ async function _streamToNonStream(stream) {
             const toolCall = toolCallBuffers.get(id)
             if (toolCall && toolCallChunk.function?.arguments) {
               toolCall.function.arguments += toolCallChunk.function.arguments
+              streamOutput(toolCallChunk.function.arguments)
             }
           }
         })
@@ -194,7 +197,7 @@ async function _streamToNonStream(stream) {
 
         // 工具调用结束：将缓冲区数据写入最终响应
         if (choice.finish_reason === 'tool_calls' && toolCallBuffers.size > 0) {
-          finalResponse.choices[0].message.content = "" // 工具调用时 content 为 null
+          finalResponse.choices[0].message.content = '' // 工具调用时 content 为 null
           finalResponse.choices[0].message.tool_calls = Array.from(
             toolCallBuffers.values(),
           )

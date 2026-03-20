@@ -2,7 +2,7 @@
  * @Author: Roman 306863030@qq.com
  * @Date: 2026-03-17 11:59:19
  * @LastEditors: Roman 306863030@qq.com
- * @LastEditTime: 2026-03-17 19:33:24
+ * @LastEditTime: 2026-03-20 16:52:45
  * @FilePath: \deepfish\src\core\extension\DefaultExtension.js
  * @Description: 默认扩展函数
  * @
@@ -112,7 +112,18 @@ async function executeJSCode(code) {
     const Func = new Function(
       "Tools",
       "require",
-      `return (async () => { this.logMessages = [];const originalLog = console.log;const newLog = function(){ originalLog.apply(console, arguments); this.logMessages.push(Array.from(arguments).join(" "))};console.log = newLog.bind(this);${code };return this.logMessages.join('\\n'); })()`,
+      `return (async () => {
+          this.logMessages = []
+          const originalLog = console.log
+          const newLog = function () {
+            originalLog.apply(console, arguments)
+            this.logMessages.push(Array.from(arguments).join(' '))
+          }
+          console.log = newLog.bind(this)
+          ${code}
+          console.log = originalLog
+          return this.logMessages.join('\\n')
+        })()`,
     );
     const originalRequire = require;
     const newRequire = (modulePath) => {
@@ -123,11 +134,6 @@ async function executeJSCode(code) {
       return originalRequire(modulePath);
     };
 
-    const newLog = function () {
-      console.log.apply(console, arguments);
-      this.logMessages.push(Array.from(arguments).join(" "))
-    }
-    
     const result = await Func(functions, newRequire);
     
     return result || "";
@@ -139,47 +145,88 @@ async function executeJSCode(code) {
 // 生成一个扩展函数文件 关键字：内置函数、扩展工具
 async function getExtensionFileRule(goal) {
   const newGoal = `
-    创建一个js文件或一个包含主文件的node项目，使用逻辑清晰的nodejs代码完成用户目标: ${goal}。主函数输出两个字段：descriptions(openai能识别的函数描述)和functions(key为函数名称，value为方法体的对象)。注意：1.函数体的参数必须与descriptions中描述的参数一致，可以包含一个或多个可以被AI工作流调用的函数。2.函数名称开头增加"领域用途+分隔符"作为命名空间，函数描述的开头使用统一的自然语言”领域用途+分隔符“来描述。3.函数中可以直接调用requestAI、executeCommand和其他内置文件处理类函数，程序运行中将内置函数自动注入到this.Tools中，如this.Tools.requestAI(systemDescription, prompt, temperature)、this.Tools.readFile(filePath),如下所示：
-    “”“
-    const descriptions = []
-    const functions = {}
-    module.exports = {
-      descriptions,
-      functions,
-    }
-    ”“”
-    以下是示例：
-    “”“
-    const descriptions = [
-      {
-        name: 'systemFileManagement_renameFile',
-        description: '系统文件管理:重命名文件',
-        parameters: {
-          type: 'object',
-          properties: {
-            oldPath: {
-              type: 'string',
-              description: '旧文件路径',
-            },
-            newPath: {
-              type: 'string',
-              description: '新文件路径',
-            },
-          },
-        },
+### 任务目标
+基于指定规则创建一个标准化的Node.js NPM项目，实现用户目标：${goal}，最终输出符合AI工作流调用规范的函数模块，并配套中英文说明文档。
+
+### 第一步：项目初始化
+1. 目录创建：新建目录，目录名称为「项目功能名称」，作为NPM项目根目录
+2. package.json配置：
+   - name字段值：@deepfish-ai/项目功能名称（替换「项目功能名称」为实际功能名）
+   - git仓库地址：固定为 https://github.com/qq306863030/deepfish-extensions.git
+   - author设置为"DeepFish AI",
+3. 主文件：项目入口文件必须命名为index.js
+4. 文档文件：项目根目录需新增2个文档文件：
+   - README_CN.md（中文说明文档）
+   - README.md（英文说明文档）
+
+### 第二步：index.js 完整开发规范
+#### 2.1 核心输出要求
+文件需输出两个核心字段，且代码逻辑清晰、可运行：
+- descriptions：数组类型，每个元素为OpenAI可识别的函数描述对象
+- functions：对象类型，key为函数名称，value为函数方法体
+
+#### 2.2 开发强制规则
+1. 参数一致性：functions中函数的入参，必须与descriptions中对应函数声明的parameters完全一致
+2. 命名规范：
+   - 函数名称前缀：「领域用途+分隔符」（如systemFileManagement_）
+   - 函数描述开头：统一格式「领域用途+分隔符+功能描述」（如系统文件管理:重命名文件）
+3. 内置工具调用：函数内部可直接使用this.Tools下的内置方法，示例：
+   - this.Tools.requestAI(systemDescription, prompt, temperature)
+   - this.Tools.readFile(filePath)
+   - 其他文件处理类内置函数（运行时自动注入）
+4. 函数数量：至少包含1个可被AI工作流调用的函数
+
+#### 2.3 基础代码模板（必须遵循）
+const descriptions = []
+const functions = {}
+module.exports = {
+  descriptions,
+  functions,
+}
+
+#### 2.4 参考示例（可参考格式）
+const descriptions = [
+  {
+    name: 'systemFileManagement_renameFile',
+    description: '系统文件管理:重命名文件',
+    parameters: {
+      type: 'object',
+      properties: {
+        oldPath: { type: 'string', description: '旧文件路径' },
+        newPath: { type: 'string', description: '新文件路径' },
       },
-    ]
-    const functions = {
-      systemFileManagement_renameFile: (oldPath, newPath) => {
-        return this.Tools.rename(oldPath, newPath)
-      },
-    }
-    module.exports = {
-      descriptions,
-      functions,
-    }
-    ”“”
-    
+    },
+  },
+]
+const functions = {
+  systemFileManagement_renameFile: (oldPath, newPath) => {
+    return this.Tools.rename(oldPath, newPath)
+  },
+}
+module.exports = {
+  descriptions,
+  functions,
+}
+
+### 第三步：README文档规范
+#### 3.1 通用要求
+- 两个文档需在标题下方包含「中英文切换标签」（如文档顶部标注「English | 中文」/「中文 | English」）
+- 结构保持一致，仅语言不同，核心模块顺序不可调整
+- 文件名称README_CN.md（中文）、README.md（英文）
+- 链接使用相对路径，如[中文](./README_CN.md)
+
+#### 3.2 核心模块
+1. 总体功能描述：
+   - 清晰说明当前NPM包的核心定位、整体功能价值、适用场景
+   - 语言简洁易懂，无需技术细节，聚焦「做什么」而非「怎么做」
+2. 快速开始：
+   - 明确说明安装步骤，顺序不可颠倒：
+     ① 先安装deepfish-ai全局库：npm install deepfish-ai -g
+     ② 再安装当前项目库：npm install @deepfish-ai/项目功能名称 -g
+3. 函数列表及功能描述：
+   - 列出当前项目中所有函数名称
+   - 对应说明每个函数的核心功能
+   - 无需编写各个函数的具体使用方法
   `;
   return newGoal;
 }
@@ -663,7 +710,7 @@ const descriptions = [
     type: "function",
     function: {
       name: "getAiConfig",
-      description: "获取ai的配置参数",
+      description: "获取ai请求接口的配置参数",
       parameters: {
         type: "object",
         properties: {},
@@ -675,7 +722,7 @@ const descriptions = [
     type: "function",
     function: {
       name: "getAiConfigPath",
-      description: "获取ai的配置文件地址",
+      description: "获取ai请求接口配置的文件地址",
       parameters: {
         type: "object",
         properties: {},
