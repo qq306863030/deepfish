@@ -75,7 +75,7 @@ async function askConfirm(name, message, defaultVal = true, opt = {}) {
       ...opt
     }
   ]
-  const answers = await inquirer.default.prompt(questions)
+  const answers = await inquirer.prompt(questions)
   return answers[name]
 }
 
@@ -91,7 +91,7 @@ function askList(name, message, choices, defaultVal = 0, opt = {}) {
       ...opt
     }
   ]
-  return inquirer.default.prompt(questions)
+  return inquirer.prompt(questions)
 }
 
 // 输入问答
@@ -105,7 +105,7 @@ async function askInput(name, message, defaultVal = '', opt = {}) {
       ...opt
     },
   ]
-  const answers = await inquirer.default.prompt(questions)
+  const answers = await inquirer.prompt(questions)
   return answers[name]
 }
 
@@ -120,13 +120,13 @@ async function askNumber(name, message, defaultVal = 0, opt = {}) {
       ...opt
     },
   ]
-  const answers = await inquirer.default.prompt(questions)
+  const answers = await inquirer.prompt(questions)
   return answers[name]
 }
 
 // 输入任何
 function askAny(questions) {
-  return inquirer.default.prompt(questions)
+  return inquirer.prompt(questions)
 }
 
 

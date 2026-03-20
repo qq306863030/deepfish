@@ -151,9 +151,20 @@ class ConfigManager {
 
   // 查看ai详情
   viewAiConfigDetail(aiName) {
+    if (this.isAiListEmpty()) {
+      logError('No AI configurations found. Please add an AI configuration first.')
+      return
+    }
+    if (!aiName) {
+      aiName = this.config.currentAi
+      if (!aiName) {
+        logError('No current AI configuration set. Please input "ai config use <name>" to set a current configuration.')
+        return
+      }
+    }
     const aiConfig = this._getAiConfig(aiName)
     if (!aiConfig) {
-      logError('No current AI configuration set.')
+      logError('AI configuration not found. Please check the name and try again.')
       return
     }
     console.log('AI Configuration Details')
@@ -163,7 +174,7 @@ class ConfigManager {
     console.log(`API Base URL: ${aiConfig.baseUrl}`)
     console.log(`Model: ${aiConfig.model}`)
     if (aiConfig.apiKey) {
-      console.log(`API Key: ${aiConfig.apiKey.substring(0, 8)}...`)
+      console.log(`API Key: ${aiConfig.apiKey}`)
     }
     console.log(`Temperature: ${aiConfig.temperature}`)
     console.log(`Max Tokens: ${aiConfig.maxTokens}`)
