@@ -153,7 +153,7 @@ ai ext ls # List all extension tools
 
 ### Configuration File Structure
 
-The configuration file (`~/.ai-cmd.config.js`) has the following structure:
+The configuration file (`~/.deepfish-ai/config.js`) has the following structure:
 
 ```javascript
 module.exports = {
