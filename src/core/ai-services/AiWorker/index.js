@@ -2,7 +2,7 @@
  * @Author: Roman 306863030@qq.com
  * @Date: 2026-03-16 09:18:05
  * @LastEditors: Roman 306863030@qq.com
- * @LastEditTime: 2026-03-24 15:14:55
+ * @LastEditTime: 2026-03-24 18:07:05
  * @FilePath: \deepfish\src\core\ai-services\AiWorker\index.js
  * @Description: 工作流类
  * @
@@ -15,7 +15,7 @@ class AiWorker {
   constructor(aiCli, client) {
     this.aiCli = aiCli
     this.client = client
-    this.aiRecorder = this.aiCli.aiRecorder
+    this.historyManager = this.aiCli.historyManager
     this.messages = []
     this.aiAgent = new AiAgent(
       this.client,
@@ -25,36 +25,18 @@ class AiWorker {
     )
   }
 
-  async main(goal) {
-    // 判断是否回复会话
-    const isRecover = await this.aiRecorder.recover()
-    if (isRecover) {
-      const { messages } = isRecover
-      // 判断是否已经完成
-      const lastMessage = messages[messages.length - 1]
-      if (lastMessage.role === 'assistant' && !lastMessage.tool_calls) {
-        // 说明已经执行完毕，直接返回
-        this.messages = messages
-        logInfo(lastMessage.content)
-        return
-      }
-      this.messages = messages
-      this.aiAgent.aiMessageManager.reLinkMsgs(this.messages)
-      await this._recoverHistory(goal, this.messages)
+  main(goal) {
+    if (!this.messages.length) {
+      this.messages = getInitialMessages(goal)
+      this.aiAgent.work(this.messages)
     } else {
-      if (!this.messages.length) {
-        this.messages = getInitialMessages(goal)
-        await this.aiAgent.work(this.messages)
-      } else {
-        this.aiAgent.aiMessageManager.reLinkMsgs(this.messages)
-        this.aiAgent.aiMessageManager.addMsg({
-          role: 'user',
-          content: goal,
-        })
-        await this.aiAgent.work(this.messages)
-      }
+      this.aiAgent.aiMessageManager.reLinkMsgs(this.messages)
+      this.aiAgent.aiMessageManager.addMsg({
+        role: 'user',
+        content: goal,
+      })
+      this.aiAgent.work(this.messages)
     }
-    // this.aiRecorder.clear()
   }
 
   subSkillAgent(skillContent, goal) {
@@ -68,7 +50,22 @@ class AiWorker {
     return aiAgent.work(initMessages)
   }
 
-  async _recoverHistory(goal, messages) {
+  recover(messages) {
+    // 判断是否回复会话
+    // 判断是否已经完成
+    const lastMessage = messages[messages.length - 1]
+    if (lastMessage.role === 'assistant' && !lastMessage.tool_calls) {
+      // 说明已经执行完毕，直接返回
+      this.messages = messages
+      logInfo(lastMessage.content)
+      return
+    }
+    this.messages = messages
+    this.aiAgent.aiMessageManager.reLinkMsgs(this.messages)
+    this._recoverHistory(this.messages)
+  }
+
+  async _recoverHistory(messages) {
     logInfo('Recovering from previous conversation...')
     let lastMessage = messages[messages.length - 1]
     if (lastMessage.role === 'tool') {
@@ -84,12 +81,6 @@ class AiWorker {
       return lastMessage.content || ''
     } else if (lastMessage.role === 'user') {
       // 最后一项是用户输入，说明是新的一轮对话
-      this.aiAgent.work(this.messages)
-    } else if (lastMessage.role === 'system') {
-      this.aiAgent.aiMessageManager.addMsg({
-        role: 'user',
-        content: goal,
-      })
       this.aiAgent.work(this.messages)
     }
     return ''

@@ -182,8 +182,6 @@ module.exports = {
   maxMessagesLength: 50000, // 最大压缩长度
   maxMessagesCount: 40, // 最大压缩数量
   extensions: [], // 扩展文件路径列表
-  isRecordHistory: false, // 是否创建工作流执行记录文件
-  isLog: false // 是否创建工作流执行日志
 };
 ```
 

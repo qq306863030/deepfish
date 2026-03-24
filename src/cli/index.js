@@ -7,6 +7,7 @@ const ConfigManager = require("./ConfigManager.js");
 require("./ai-config.js");
 require("./ai-ext.js");
 require("./ai-skill.js");
+require("./ai-history.js");
 
 program
   .version("1.0.0")
@@ -22,7 +23,7 @@ program
 
 async function main() {
   try {
-    if (program.args && (program.args[0] === "config" || program.args[0] === "ext" || program.args[0] === "skill")) {
+    if (program.args && (program.args[0] === "config" || program.args[0] === "ext" || program.args[0] === "skill") || (program.args[0] === "history")) {
       return;
     }
     const options = program.opts();

@@ -184,7 +184,6 @@ module.exports = {
   maxMessagesLength: 50000, // Maximum compression length
   maxMessagesCount: 40, // Maximum compression count
   extensions: [], // List of extension file paths
-  isRecordHistory: false, // Whether to create workflow execution record files
   isLog: false // Whether to create workflow execution logs
 };
 ```

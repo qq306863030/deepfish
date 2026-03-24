@@ -7,8 +7,6 @@ const defaultConfig = {
   extensions: [],
   skills:[],
   encoding: "", // 命令行编码格式
-  isRecordHistory: false, // 是否创建工作流执行记录文件,用于因意外终止恢复工作流
-  isLog: false, // 是否创建工作流执行日志
 };
 
 const aiCliConfig = {

@@ -2,7 +2,6 @@ const ExtensionManager = require('./extension/ExtensionManager')
 const readline = require('readline')
 const { logError } = require('./utils/log')
 const { GlobalVariable } = require('./globalVariable')
-const AiRecorder = require('./ai-services/AiWorker/AiRecorder')
 const AIService = require('./ai-services')
 
 class AICLI {
@@ -10,21 +9,28 @@ class AICLI {
     this.config = config
     this.aiConfig = GlobalVariable.configManager.getCurrentAiConfig()
     this.skillConfigManager = GlobalVariable.skillConfigManager
+    this.historyManager = GlobalVariable.historyManager
     // 初始化扩展
     this.extensionManager = new ExtensionManager(this)
     this.Tools = this.extensionManager.extensions.functions
-    this.aiRecorder = new AiRecorder(this);
+    
     this.aiService = new AIService(this.aiConfig.type, this)
     GlobalVariable.aiCli = this
-    GlobalVariable.aiRecorder = this.aiRecorder
-    GlobalVariable.isRecordHistory = this.config.isRecordHistory || false
-    GlobalVariable.isLog = this.config.isLog || false
   }
   
   // 单轮对话
   async run(userPrompt) {
     try {
-      await this.aiService.mainWorkflow(userPrompt)
+      if (GlobalVariable.isRecovering) {
+        const messages = this.historyManager.getMessage()
+        if (messages.length > 1) {
+          await this.aiService.recoverWorkflow(messages)
+        } else {
+          await this.aiService.mainWorkflow(userPrompt)
+        }
+      } else {
+        await this.aiService.mainWorkflow(userPrompt)
+      }
     } catch (error) {
       logError(error.stack)
       throw error

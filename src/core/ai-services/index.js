@@ -26,6 +26,10 @@ class AIService {
   subSkillWorkflow(skillContent, goal) {
     return this.aiWorker.subSkillAgent(skillContent, goal);
   }
+
+  recoverWorkflow(messages) {
+    return this.aiWorker.recover(messages);
+  }
 }
 
 module.exports = AIService;

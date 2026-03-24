@@ -27,8 +27,8 @@ class AIMessageManager {
   // 添加消息
   addMsg(message) {
     this.messages.push(message)
-    GlobalVariable.aiRecorder.record(this.messages)
-    GlobalVariable.aiRecorder.log(message)
+    GlobalVariable.historyManager.record(this.messages)
+    GlobalVariable.historyManager.log(message)
   }
   // 添加tool
   addTool(id, content) {
@@ -41,8 +41,8 @@ class AIMessageManager {
       content: content,
     }
     this.messages.push(message)
-    GlobalVariable.aiRecorder.record(this.messages)
-    GlobalVariable.aiRecorder.log(message)
+    GlobalVariable.historyManager.record(this.messages)
+    GlobalVariable.historyManager.log(message)
   }
   /**
    * 压缩消息，根据配置压缩消息长度和数量
@@ -89,8 +89,8 @@ class AIMessageManager {
         } else if (lastUserMessageIndex === messages.length - 1) {
           newMessages.push(messages[lastUserMessageIndex])
         }
-        GlobalVariable.aiRecorder.record(newMessages)
-        GlobalVariable.aiRecorder.log(newMessages)
+        GlobalVariable.historyManager.record(newMessages)
+        GlobalVariable.historyManager.log(newMessages)
       } else if (messages.length === 2) {
         const summary = await this._getSummary([messages[1]])
         newMessages.push([messages[0], summary])
