@@ -28,7 +28,6 @@ class ConfigManager {
       this.writeConfig()
     }
     this.config = this.getConfig()
-    console.log(this.config)
   }
 
   dir() {
