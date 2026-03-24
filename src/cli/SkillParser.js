@@ -1,68 +1,61 @@
-const JSON5 = require('json5')
+const fs = require("fs-extra");
+const path = require("path");
+const yaml = require('js-yaml');
 
-function parseFrontmatter(mdContent) {
-  const normalized = String(mdContent || '')
-    .replace(/\r\n/g, '\n')
-    .replace(/\r/g, '\n')
-  const result = {
-    frontmatter: {},
-    body: normalized,
+function parseSkillMetadata(skillPath) {
+  const content = fs.readFileSync(skillPath, 'utf-8');
+  
+  // 提取 frontmatter (--- 之间的内容)
+  const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/);
+  if (!frontmatterMatch) {
+    throw new Error(`No frontmatter found in ${skillPath}`);
   }
-  if (!normalized.startsWith('---\n')) {
-    return result
-  }
-
-  const endIndex = normalized.indexOf('\n---', 4)
-  if (endIndex === -1) {
-    return result
-  }
-
-  const block = normalized.slice(4, endIndex)
-  const bodyStart = endIndex + 4
-  const body = normalized.slice(bodyStart).replace(/^\n/, '')
-  const lines = block.split('\n')
-  const frontmatter = {}
-  let currentKey = ''
-
-  for (let i = 0; i < lines.length; i += 1) {
-    const line = lines[i]
-    const keyMatch = line.match(/^([A-Za-z0-9_-]+):\s*(.*)$/)
-    if (keyMatch) {
-      const key = keyMatch[1].trim()
-      const inlineValue = this._stripQuotes(keyMatch[2].trim())
-      frontmatter[key] = inlineValue
-      currentKey = key
-      continue
-    }
-
-    const isIndented = line.startsWith(' ') || line.startsWith('\t')
-    if (isIndented && currentKey) {
-      const appendValue = line.trim()
-      frontmatter[currentKey] = frontmatter[currentKey]
-        ? `${frontmatter[currentKey]}\n${appendValue}`
-        : appendValue
+  
+  const frontmatter = frontmatterMatch[1];
+  const metadata = {};
+  
+  // 解析 key: value 或 key: "quoted value"
+  const lines = frontmatter.split('\n');
+  for (const line of lines) {
+    const match = line.match(/^(\w+):\s*(.+)$/);
+    if (match) {
+      const [, key, value] = match;
+      // 去除引号
+      metadata[key] = value.replace(/^["']|["']$/g, '');
     }
   }
-
-  result.frontmatter = frontmatter
-  result.body = body
-  return result
+  
+  return {
+    name: metadata.name,
+    description: metadata.description,
+    homepage: metadata.homepage,
+    location: path.dirname(skillPath),
+    skillFilePath: skillPath,
+    metadata: metadata.metadata || {}
+  };
 }
 
-function parseMetadata(value) {
-  if (typeof value !== 'string' || !value.trim()) {
-    return undefined
+function parseSkillMetadataYaml(skillPath) {
+  const content = fs.readFileSync(skillPath, 'utf-8');
+  const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/);
+  
+  if (!frontmatterMatch) {
+    throw new Error(`No frontmatter found in ${skillPath}`);
   }
-
-  try {
-    const parsed = JSON5.parse(value)
-    return parsed && typeof parsed === 'object' ? parsed : undefined
-  } catch (error) {
-    return undefined
-  }
+  
+  const frontmatter = yaml.load(frontmatterMatch[1]);
+  
+  return {
+    name: frontmatter.name,
+    description: frontmatter.description,
+    homepage: frontmatter.homepage,
+    location: path.dirname(skillPath),
+    metadata: frontmatter.metadata || {},
+    skillFilePath: skillPath,
+  };
 }
 
 module.exports = {
-  parseFrontmatter,
-  parseMetadata
+  parseSkillMetadata,
+  parseSkillMetadataYaml
 }

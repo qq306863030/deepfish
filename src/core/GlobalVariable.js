@@ -4,6 +4,7 @@ const GlobalVariable = {
   isRecordHistory: false,
   isLog: false,
   configManager: null,
+  skillConfigManager: null,
 }
 
 module.exports = {

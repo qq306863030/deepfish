@@ -1,8 +1,8 @@
 /**
  * @Author: Roman 306863030@qq.com
  * @Date: 2026-03-23 15:23:42
- * @LastEditors: roman_123 306863030@qq.com
- * @LastEditTime: 2026-03-23 23:50:05
+ * @LastEditors: Roman 306863030@qq.com
+ * @LastEditTime: 2026-03-24 16:25:41
  * @FilePath: \deepfish\src\cli\SkillConfigManager.js
  * @Description: Skill configuration manager
  */
@@ -13,9 +13,9 @@ const cheerio = require('cheerio')
 const { GlobalVariable } = require('../core/globalVariable')
 const { logError, logSuccess } = require('../core/utils/log')
 const extract = require('extract-zip')
-const { parseFrontmatter, parseMetadata } = require('./SkillParser')
+const { parseSkillMetadataYaml } = require('./SkillParser')
 
-// skill的数据结构: {name: string, enable: boolean, description: string, baseDir: string, fileName: string}
+// skill的数据结构: {name: string, enable: boolean, description: string, baseDir: string, skillDirName: string, location: string, skillFilePath: string, homepage: string, metadata: object}
 class SkillConfigManager {
   constructor() {
     this.configManager = GlobalVariable.configManager
@@ -24,6 +24,7 @@ class SkillConfigManager {
     // 自动创建skill目录
     fs.ensureDirSync(this.skillDir)
     this.init()
+    GlobalVariable.skillConfigManager = this
   }
 
   init() {
@@ -36,30 +37,49 @@ class SkillConfigManager {
   }
 
   // 预加载skills，拼接提示词
-  preLoadSkills(skill) {}
+  preLoadSkills() {
+    const skills = this.configManager.config.skills.filter((skill) => skill.enable)
+    if (skills.length === 0) {
+        return ''
+    }
+    const table = skills
+      .map((s) => `| ${s.name} | ${s.description} | ${s.location} | ${s.skillFilePath} |`)
+      .join('\n')
+    return (
+`
+你可以调用以下技能来完成用户的请求，技能的调用方式是：当用户的请求匹配技能描述时，调用executeSkill函数加载对应技能的SKILL.md文件，获取调用说明，并根据说明调用对应的工具函数来完成任务。
+## Available Skills
+
+| Skill | Description | Location | SkillFilePath |
+|-------|-------------|----------|---------------|
+${table}
+
+## Skills Policy
+- 当用户请求匹配 skill description 时，调用 executeSkill 函数加载对应 SKILL.md
+- 一次只加载一个技能，优先匹配最具体的技能
+- 当用户请求不匹配任何技能描述时，不加载任何技能`
+    )
+  }
 
   // 调用skill，传入参数，返回结果
-  async callSkill(skill, params) {}
+  loadSkill(skillFilePath) {
+    // 读取skill的SKILL.md，获取调用说明
+    if (!fs.existsSync(skillFilePath)) {
+        logError(`Skill file "${skillFilePath}" does not exist.`)
+        return null
+    }
+    return fs.readFileSync(skillFilePath, 'utf-8')
+  }
 
-  // 解析skill文件，获取名称、版本、作者、元数据、描述等信息
-  _parseSkill(baseDir) {
+  // 解析skill文件，写入到json中，获取名称、版本、作者、元数据、描述等信息
+  _parseSkill(skillDirPath) {
     const skillMdPath = ['SKILL.md', 'skill.md']
-      .map((name) => path.join(baseDir, name))
+      .map((name) => path.join(skillDirPath, name))
       .find((filePath) => fs.existsSync(filePath))
     if (!skillMdPath) {
       return {}
     }
-    const parsed = {}
-    const raw = fs.readFileSync(skillMdPath, 'utf8').replace(/^\uFEFF/, '')
-    const frontmatterInfo = parseFrontmatter(raw)
-    const frontmatter = frontmatterInfo.frontmatter
-    parsed.name = String(frontmatter.name || '').trim()
-    parsed.description = String(frontmatter.description || '').trim()
-    parsed.version = String(frontmatter.version || '').trim()
-    parsed.author = String(frontmatter.author || '').trim()
-    parsed.homepage = String(frontmatter.homepage || '').trim()
-    const metadata = parseMetadata(frontmatter.metadata)
-    parsed.metadata = metadata || {}
+    const parsed = parseSkillMetadataYaml(skillMdPath)
     return parsed
   }
 
@@ -74,7 +94,7 @@ class SkillConfigManager {
       } else {
         console.log('Skills in config:')
         skills.forEach((skill, index) => {
-          console.log(`[${index}] ${skill.name}`)
+          console.log(`[${index}] ${skill.name} (${skill.enable ? 'Enabled' : 'Disabled'})`)
         })
       }
       console.log('='.repeat(50))
@@ -82,7 +102,6 @@ class SkillConfigManager {
       logError(`No skills in config.`)
     }
   }
-
   _check() {
     // 如果数组的数量与目录中的数量不一致，则自动同步
     const userConfig = this.configManager.config
@@ -98,7 +117,7 @@ class SkillConfigManager {
       skillDirs.forEach((skillDir) => {
         if (
           !skills.some(
-            (skill) => skill.fileName === skillDir || skill.name === skillDir,
+            (skill) => skill.skillDirName === skillDir || skill.name === skillDir,
           )
         ) {
           this._registerSkill(skillDir, false)
@@ -106,7 +125,7 @@ class SkillConfigManager {
       })
       // 查询已注册但目录不存在的skill，自动从列表中删除
       skills.forEach((skill) => {
-        if (!skillDirs.includes(skill.fileName)) {
+        if (!skillDirs.includes(skill.skillDirName)) {
           this.remove(skill.name)
         }
       })
@@ -291,17 +310,18 @@ class SkillConfigManager {
         `Skill with name "${skillDirName}" already exists in config.`,
       )
     }
-    const skillPath = path.join(this.skillDir, skillDirName)
+    const skillDirPath = path.join(this.skillDir, skillDirName)
     // 获取name、description
-    const skillInfo = this._parseSkill(skillPath)
+    const skillInfo = this._parseSkill(skillDirPath)
     const name = skillInfo.name || skillDirName
     const description = skillInfo.description || ''
     userConfig.skills.push({
       name,
       description,
       enable,
-      baseDir: skillPath,
-      fileName: skillDirName,
+      baseDir: this.skillDir,
+      skillDirName: skillDirName,
+      ...skillInfo,
     })
     this.configManager.writeConfig(userConfig)
   }

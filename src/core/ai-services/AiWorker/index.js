@@ -2,14 +2,14 @@
  * @Author: Roman 306863030@qq.com
  * @Date: 2026-03-16 09:18:05
  * @LastEditors: Roman 306863030@qq.com
- * @LastEditTime: 2026-03-17 17:03:16
+ * @LastEditTime: 2026-03-24 15:14:55
  * @FilePath: \deepfish\src\core\ai-services\AiWorker\index.js
  * @Description: 工作流类
  * @
  */
 const { logInfo } = require('../../utils/log')
 const AiAgent = require('./AiAgent')
-const { getInitialMessages } = require('./AiTools')
+const { getInitialMessages, getInitialMessagesForSkill } = require('./AiTools')
 
 class AiWorker {
   constructor(aiCli, client) {
@@ -55,6 +55,17 @@ class AiWorker {
       }
     }
     // this.aiRecorder.clear()
+  }
+
+  subSkillAgent(skillContent, goal) {
+    const aiAgent = new AiAgent(
+      this.client,
+      this.aiCli.config,
+      this.aiCli.aiConfig,
+      this.aiCli.extensionManager.extensions,
+    )
+    const initMessages = getInitialMessagesForSkill(skillContent, goal)
+    return aiAgent.work(initMessages)
   }
 
   async _recoverHistory(goal, messages) {

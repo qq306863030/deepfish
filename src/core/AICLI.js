@@ -9,6 +9,7 @@ class AICLI {
   constructor(config) {
     this.config = config
     this.aiConfig = GlobalVariable.configManager.getCurrentAiConfig()
+    this.skillConfigManager = GlobalVariable.skillConfigManager
     // 初始化扩展
     this.extensionManager = new ExtensionManager(this)
     this.Tools = this.extensionManager.extensions.functions

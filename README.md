@@ -71,6 +71,8 @@ Core Features:
 
 - Multi-model Compatibility: Seamlessly supports DeepSeek, Ollama, and all AI models that comply with the OpenAI API specification. It can be flexibly switched according to needs to adapt to instruction generation requirements in different scenarios.
 
+- OpenClaw Skill Compatibility: Supports the OpenClaw Skill ecosystem. Skills can be installed, enabled, and managed through the existing Skill commands to quickly expand workflow capabilities.
+
 - Natural Language to Instructions: Precisely parses natural language requirements and automatically converts them into corresponding operating system commands (such as Linux, Windows, and macOS terminal commands) and file operation instructions (such as creating, deleting, and modifying files/directories), eliminating the need to manually write complex commands.
 
 - Highly Extensible: Supports expanding functional boundaries through an extension mechanism. In addition to basic terminal and file operations, it can easily implement complex tasks such as translation, novel writing, file format conversion, and data processing to meet diverse usage needs.
@@ -153,10 +155,10 @@ ai ext ls # List all extension tools
 # Skill commands
 ai skill ls # List all registered skills
 ai skill add <name> # Add a local skill directory or zip file from the current directory
-ai skill del <name|index> # Remove a skill by name or index
-ai skill install <url> # Install a skill from ClawHub
-ai skill enable <name|index> # Enable a skill by name or index
-ai skill disable <name|index> # Disable a skill by name or index
+ai skill del <name|index> # Remove a skill by name or index, exp: ai skill del 1
+ai skill install <url> # Install a skill from ClawHub，exp: ai skill install https://clawhub.ai/TheSethRose/agent-browser
+ai skill enable <name|index> # Enable a skill by name or index, exp: ai skill enable 1
+ai skill disable <name|index> # Disable a skill by name or index, exp: ai skill disable 1
 ```
 
 ### Configuration File Structure

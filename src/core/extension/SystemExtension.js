@@ -2,14 +2,13 @@
  * @Author: Roman 306863030@qq.com
  * @Date: 2026-03-17 11:59:19
  * @LastEditors: Roman 306863030@qq.com
- * @LastEditTime: 2026-03-20 16:52:45
- * @FilePath: \deepfish\src\core\extension\DefaultExtension.js
+ * @LastEditTime: 2026-03-24 16:36:43
+ * @FilePath: \deepfish\src\core\extension\SystemExtension.js
  * @Description: 默认扩展函数
  * @
  */
 const path = require("path");
 const { logError, logSuccess, logInfo, getConfigPath } = require("../utils/log");
-const fs = require("fs-extra");
 const shelljs = require("shelljs");
 const iconv = require("iconv-lite"); // 用于编码转换
 const os = require("os"); // 用于判断系统类型
@@ -21,8 +20,8 @@ const { aiRequestSingle } = require("../ai-services/AiWorker/AiTools");
 async function executeCommand(command) {
   return new Promise((resolve, reject) => {
     logSuccess(`Executing system command: ${command}`);
-    const platform = os.platform();
-    const targetEncoding = platform === "win32" ? "gbk" : "utf-8"; // Windows(含PowerShell)用gbk，Linux/macOS用utf-8
+    // const platform = os.platform();
+    const targetEncoding = this.config?.encoding || "utf-8" // platform === "win32" ? "gbk" : "utf-8"; // Windows(含PowerShell)用gbk，Linux/macOS用utf-8
     shelljs.exec(
       command,
       {
@@ -241,7 +240,15 @@ function getAiConfigPath() {
   return getConfigPath();
 }
 
-
+// 加载skill
+function executeSkill(skillFilePath, subGoalPrompt = "") {
+  const skillContent = this.skillConfigManager.loadSkill(skillFilePath)
+  if (!subGoalPrompt) {
+    return skillContent;
+  }
+  // 调用子工作流完成目标
+  return this.aiService.subSkillWorkflow(skillContent, subGoalPrompt)
+}
 
 const descriptions = [
   {
@@ -249,7 +256,7 @@ const descriptions = [
     function: {
       name: "executeCommand",
       description:
-        '执行系统命令，返回执行结果。适用于运行shell命令、系统工具等。命令执行失败时会抛出错误，成功时返回命令执行结果字符串或"System command executed successfully"。',
+        '执行系统命令，返回执行结果。适用于运行shell命令、系统工具等。注意：如果执行多条命令，且需要保持会话，使用命令链的方式执行。命令执行失败时会抛出错误，成功时返回命令执行结果字符串或"System command executed successfully"。',
       parameters: {
         type: "object",
         properties: {
@@ -331,6 +338,21 @@ const descriptions = [
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "executeSkill",
+      description: "加载并执行指定路径的skill，以该skill提供的工具函数为基础，启动子工作流完成目标任务。skillFilePath为SKILL.md文件的绝对路径，subGoalPrompt为子工作流需要完成的目标描述，留空则仅加载skill不执行子任务。",
+      parameters: {
+        type: "object",
+        properties: {
+          skillFilePath: { type: "string", description: "SKILL.md文件的绝对路径" },
+          subGoalPrompt: { type: "string", description: "子工作流需要完成的目标描述，留空则仅加载skill" },
+        },
+        required: ["skillFilePath"],
+      },
+    },
+  },
 ];
 const functions = {
   executeCommand,
@@ -339,6 +361,7 @@ const functions = {
   getExtensionFileRule,
   getAiConfig,
   getAiConfigPath,
+  executeSkill,
 };
 
 module.exports = {

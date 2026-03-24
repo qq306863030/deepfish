@@ -2,14 +2,15 @@
  * @Author: Roman 306863030@qq.com
  * @Date: 2026-03-17 09:12:22
  * @LastEditors: Roman 306863030@qq.com
- * @LastEditTime: 2026-03-20 16:28:53
+ * @LastEditTime: 2026-03-24 16:24:44
  * @FilePath: \deepfish\src\core\ai-services\AiWorker\AiTools.js
  * @Description: 对话初始化、对话请求
  * @
  */
 const { OpenAI } = require('openai')
-const { AiAgentSystemPrompt } = require('./AiPrompt')
+const { AiAgentSystemPrompt, SkillAiAgentSystemPrompt } = require('./AiPrompt')
 const { streamOutput, streamLineBreak } = require('../../utils/log')
+const { GlobalVariable } = require('../../globalVariable')
 
 // 创建client
 function createOpenAiClient(aiConfig) {
@@ -21,10 +22,31 @@ function createOpenAiClient(aiConfig) {
 
 // 获取初始的message
 function getInitialMessages(goal) {
+  // 合并系统描述
+  const skillPrompt = GlobalVariable.skillConfigManager.preLoadSkills()
+  const systemDescription = `${AiAgentSystemPrompt}\n\n${skillPrompt}`
   return [
     {
       role: 'system',
-      content: AiAgentSystemPrompt,
+      content: systemDescription,
+    },
+    {
+      role: 'user',
+      content: goal,
+    },
+  ]
+}
+
+// 获取调用skill的初始message
+function getInitialMessagesForSkill(skillContent, goal) {
+  const systemDescription = `
+${SkillAiAgentSystemPrompt}
+### 以下是加载完成的Skill.md文件的内容：
+${skillContent}`
+  return [
+    {
+      role: 'system',
+      content: systemDescription,
     },
     {
       role: 'user',
@@ -219,4 +241,5 @@ module.exports = {
   aiRequestSingle,
   aiRequestByTools,
   getInitialMessages,
+  getInitialMessagesForSkill
 }

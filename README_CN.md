@@ -70,6 +70,8 @@
 
 - 多模型兼容：无缝支持DeepSeek、Ollama，以及所有遵循OpenAI API规范的AI模型，可根据需求灵活切换，适配不同场景下的指令生成需求。
 
+- OpenClaw Skill 兼容：支持适配 OpenClaw 的 Skill 生态，可通过现有 Skill 命令进行安装、启用与管理，快速扩展工作流能力。
+
 - 自然语言转指令：精准解析自然语言需求，自动转换为对应的操作系统命令（如Linux、Windows、macOS终端指令）和文件操作指令（如创建、删除、修改文件/目录），无需手动编写复杂命令。
 
 - 高度可扩展：支持通过扩展机制拓展功能边界，除基础的终端、文件操作外，可轻松实现翻译、小说创作、文件格式转换、数据处理等复杂任务，满足多样化使用需求。
@@ -151,10 +153,10 @@ ai ext ls # 列出所有扩展工具
 # Skill 命令
 ai skill ls # 列出所有已注册的 skill
 ai skill add <name> # 从当前目录添加本地 skill 目录或 zip 文件
-ai skill del <name|index> # 通过名称或索引删除 skill
-ai skill install <url> # 从 ClawHub 安装 skill
-ai skill enable <name|index> # 通过名称或索引启用 skill
-ai skill disable <name|index> # 通过名称或索引禁用 skill
+ai skill del <name|index> # 通过名称或索引删除 skill, exp: ai skill del 1
+ai skill install <url> # 从 ClawHub 安装 skill，exp: ai skill install https://clawhub.ai/TheSethRose/agent-browser
+ai skill enable <name|index> # 通过名称或索引启用 skill, exp: ai skill enable 1
+ai skill disable <name|index> # 通过名称或索引禁用 skill, exp: ai skill disable 1
 ```
 
 ### 配置文件结构

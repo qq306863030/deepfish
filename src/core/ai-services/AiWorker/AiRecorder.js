@@ -2,8 +2,8 @@
  * @Author: Roman 306863030@qq.com
  * @Date: 2026-03-16 09:18:05
  * @LastEditors: Roman 306863030@qq.com
- * @LastEditTime: 2026-03-17 10:01:45
- * @FilePath: \src\core\ai-services\AiWorker\AiRecorder.js
+ * @LastEditTime: 2026-03-24 13:15:17
+ * @FilePath: \deepfish\src\core\ai-services\AiWorker\AiRecorder.js
  * @Description: 对话历史记录、恢复
  * @
  */
@@ -11,7 +11,7 @@ const fs = require("fs-extra");
 const path = require("path");
 const inquirer = require("inquirer");
 const dayjs = require("dayjs");
-const { GlobalVariable } = require("../../GlobalVariable");
+const { GlobalVariable } = require("../../globalVariable");
 
 class AiRecorder {
   constructor(aiCli) {

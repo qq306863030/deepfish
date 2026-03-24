@@ -1,7 +1,7 @@
 const path = require('path')
 const os = require('os')
 const fs = require('fs-extra')
-const { defaultConfig } = require('./configTools')
+const { defaultConfig } = require('./DefaultConfig')
 const { logSuccess, logError, logInfo } = require('../core/utils/log')
 const { GlobalVariable } = require('../core/globalVariable')
 

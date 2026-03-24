@@ -8,7 +8,7 @@
  * @
  */
 const { program } = require('commander')
-const { aiCliConfig } = require('./configTools')
+const { aiCliConfig } = require('./DefaultConfig')
 const { askConfirm, askAny } = require('../core/utils/log')
 const ConfigManager = require('./ConfigManager')
 
