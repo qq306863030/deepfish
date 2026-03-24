@@ -157,6 +157,11 @@ ai skill del <name|index> # 通过名称或索引删除 skill, exp: ai skill del
 ai skill install <url> # 从 ClawHub 安装 skill，exp: ai skill install https://clawhub.ai/TheSethRose/agent-browser
 ai skill enable <name|index> # 通过名称或索引启用 skill, exp: ai skill enable 1
 ai skill disable <name|index> # 通过名称或索引禁用 skill, exp: ai skill disable 1
+
+# 历史记录命令
+ai history clear # 清除历史消息
+ai history output # 将历史消息输出到当前目录
+ai history dir # 打开历史记录目录
 ```
 
 ### 配置文件结构
@@ -179,8 +184,8 @@ module.exports = {
   ],
   currentAi: "default", // 当前活动的AI配置名称
   maxIterations: -1, // 代理工作流的最大迭代次数，-1为不限制迭代次数
-  maxMessagesLength: 50000, // 最大压缩长度
-  maxMessagesCount: 40, // 最大压缩数量
+  maxMessagesLength: 150000, // 最大压缩长度
+  maxMessagesCount: 100, // 最大压缩数量
   extensions: [], // 扩展文件路径列表
 };
 ```

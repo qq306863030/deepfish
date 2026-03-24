@@ -1,8 +1,8 @@
 /**
  * @Author: Roman 306863030@qq.com
  * @Date: 2026-03-16 09:18:05
- * @LastEditors: Roman 306863030@qq.com
- * @LastEditTime: 2026-03-24 18:07:05
+ * @LastEditors: roman_123 306863030@qq.com
+ * @LastEditTime: 2026-03-24 21:38:14
  * @FilePath: \deepfish\src\core\ai-services\AiWorker\index.js
  * @Description: 工作流类
  * @
@@ -25,17 +25,24 @@ class AiWorker {
     )
   }
 
-  main(goal) {
-    if (!this.messages.length) {
-      this.messages = getInitialMessages(goal)
-      this.aiAgent.work(this.messages)
+  async main(goal) {
+    // 自动加载历史记录
+    if (this.messages.length === 0) {
+      const messages = this.historyManager.getMessage()
+      if (messages.length) {
+        await this.loadHhistoryMessages(messages)
+        await this.main(goal)
+      } else {
+        this.messages = getInitialMessages(goal)
+        await this.aiAgent.work(this.messages)
+      }
     } else {
       this.aiAgent.aiMessageManager.reLinkMsgs(this.messages)
       this.aiAgent.aiMessageManager.addMsg({
         role: 'user',
         content: goal,
       })
-      this.aiAgent.work(this.messages)
+      await this.aiAgent.work(this.messages)
     }
   }
 
@@ -50,24 +57,16 @@ class AiWorker {
     return aiAgent.work(initMessages)
   }
 
-  recover(messages) {
-    // 判断是否回复会话
+  async loadHhistoryMessages(messages) {
     // 判断是否已经完成
-    const lastMessage = messages[messages.length - 1]
+    let lastMessage = messages[messages.length - 1]
     if (lastMessage.role === 'assistant' && !lastMessage.tool_calls) {
       // 说明已经执行完毕，直接返回
       this.messages = messages
-      logInfo(lastMessage.content)
       return
     }
     this.messages = messages
     this.aiAgent.aiMessageManager.reLinkMsgs(this.messages)
-    this._recoverHistory(this.messages)
-  }
-
-  async _recoverHistory(messages) {
-    logInfo('Recovering from previous conversation...')
-    let lastMessage = messages[messages.length - 1]
     if (lastMessage.role === 'tool') {
       // 删除最后一项
       messages.pop()
@@ -76,12 +75,12 @@ class AiWorker {
     if (lastMessage.role === 'assistant' && lastMessage.tool_calls) {
       // 最后一项正在执行工具，则重新执行
       await this.aiAgent.execTools(lastMessage.tool_calls)
-      this.aiAgent.work(this.messages)
+      await this.aiAgent.work(this.messages)
     } else if (lastMessage.role === 'assistant' && lastMessage.content) {
       return lastMessage.content || ''
     } else if (lastMessage.role === 'user') {
       // 最后一项是用户输入，说明是新的一轮对话
-      this.aiAgent.work(this.messages)
+      await this.aiAgent.work(this.messages)
     }
     return ''
   }

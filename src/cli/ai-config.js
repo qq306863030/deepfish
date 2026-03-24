@@ -1,8 +1,8 @@
 /**
  * @Author: Roman 306863030@qq.com
  * @Date: 2026-03-19 11:45:10
- * @LastEditors: Roman 306863030@qq.com
- * @LastEditTime: 2026-03-23 14:46:59
+ * @LastEditors: roman_123 306863030@qq.com
+ * @LastEditTime: 2026-03-24 22:02:52
  * @FilePath: \deepfish\src\cli\ai-config.js
  * @Description: ai config 相关命令
  * @
@@ -112,7 +112,7 @@ configCommand
         message: 'Enter DeepSeek model name:',
         when: (answers) =>
           answers.Type === 'DeepSeek' && answers.model === 'other',
-        default: 'deepseek-chat',
+        default: 'deepseek-reasoner',
       },
       {
         type: 'input',
@@ -137,6 +137,13 @@ configCommand
         name: 'maxTokens',
         message: 'Enter max tokens:',
         default: (answers) => {
+          if (answers.Type === 'DeepSeek') {
+            if (answers.model === 'deepseek-chat') {
+              return 8192
+            } else if (answers.model === 'deepseek-reasoner') {
+              return 65536
+            }
+          }
           return aiCliConfig[answers.Type].maxTokens
         },
         validate: (value) => value > 0 || 'Max tokens must be greater than 0',

@@ -1,9 +1,9 @@
 const defaultConfig = {
   ai: [],
   currentAi: "",
-  maxIterations: -1, // ai完成工作流的最大迭代次数
-  maxMessagesLength: 50000, // 最大压缩长度
-  maxMessagesCount: 40, // 最大压缩数量
+  maxIterations: -1, // ai完成工作流的最大迭代次数，-1表示无限制
+  maxMessagesLength: 150000, // 最大压缩长度，-1表示无限制
+  maxMessagesCount: 100, // 最大压缩数量，-1表示无限制
   extensions: [],
   skills:[],
   encoding: "", // 命令行编码格式

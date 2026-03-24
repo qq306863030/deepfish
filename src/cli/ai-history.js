@@ -1,14 +1,15 @@
 const { program } = require("commander");
-const historyManager = require("./HistoryManager");
+const HistoryManager = require("./HistoryManager");
+const historyManager = new HistoryManager();
 const extCommand = program
   .command("history")
   .description("History management commands");
 
 extCommand
-  .command("recover")
-  .description("Recover the history messages")
+  .command("clear")
+  .description("Clear the history messages")
   .action(() => {
-    historyManager.recover();
+    historyManager.clearMessage();
   });
 
 extCommand

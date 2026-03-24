@@ -21,16 +21,7 @@ class AICLI {
   // 单轮对话
   async run(userPrompt) {
     try {
-      if (GlobalVariable.isRecovering) {
-        const messages = this.historyManager.getMessage()
-        if (messages.length > 1) {
-          await this.aiService.recoverWorkflow(messages)
-        } else {
-          await this.aiService.mainWorkflow(userPrompt)
-        }
-      } else {
-        await this.aiService.mainWorkflow(userPrompt)
-      }
+      await this.aiService.mainWorkflow(userPrompt)
     } catch (error) {
       logError(error.stack)
       throw error

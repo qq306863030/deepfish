@@ -1,8 +1,8 @@
 /**
  * @Author: Roman 306863030@qq.com
  * @Date: 2026-03-16 09:18:05
- * @LastEditors: Roman 306863030@qq.com
- * @LastEditTime: 2026-03-24 18:48:07
+ * @LastEditors: roman_123 306863030@qq.com
+ * @LastEditTime: 2026-03-24 21:50:35
  * @FilePath: \deepfish\src\cli\HistoryManager.js
  * @Description: 对话历史记录、恢复
  * @
@@ -15,8 +15,7 @@ const { v4: uuidv4 } = require('uuid')
 const { logSuccess, logError } = require('../core/utils/log')
 // cache => [history.json, id => [message.json, logs => [log.txt]]]
 class HistoryManager {
-  constructor(aiCli) {
-    this.aiCli = aiCli
+  constructor() {
     this.configManager = GlobalVariable.configManager
     GlobalVariable.historyManager = this
     this.cacheDir = path.join(this.configManager.configDir, './cache')
@@ -104,6 +103,11 @@ class HistoryManager {
     }
   }
 
+  clearMessage() {
+    const messageFile = path.join(this.cacheDir, this.id, 'message.json')
+    fs.writeJsonSync(messageFile, [], { spaces: 2 })
+  }
+
   updateMessage(message) {
     const messageFile = path.join(this.cacheDir, this.id, 'message.json')
     fs.writeJsonSync(messageFile, message, { spaces: 2 })
@@ -127,8 +131,8 @@ class HistoryManager {
       return fs.readJsonSync(this.historyFilePath, { throws: false })
     } else {
       // 创建一个文件
-      fs.writeJsonSync(this.historyFilePath, {}, { spaces: 2 })
-      return {}
+      fs.writeJsonSync(this.historyFilePath, [], { spaces: 2 })
+      return []
     }
   }
 
@@ -148,23 +152,19 @@ class HistoryManager {
     }
   }
 
-  recover() {
-    GlobalVariable.isRecovering = true
-  }
-
   // 记录message以及压缩后的messages
-  log(message) {
+  log(message, isCompress = false) {
     const logFile = path.join(
       this.logDir,
-      `log-${dayjs().format('YYYY-MM-DD HH')}}.txt`,
+      `log-${dayjs().format('YYYY-MM-DD HH')}.txt`,
     )
     try {
-      if (typeof message === 'object' && !Array.isArray(message)) {
-        message = JSON.stringify(message)
-      } else if (Array.isArray(message)) {
-        message = '###压缩上下文###' + '\n' + JSON.stringify(message)
+      let logEntry = ''
+      if (isCompress) {
+        logEntry = `[${new Date().toISOString()}][compress] ${message.content}\n`
+      } else {
+        logEntry = `[${new Date().toISOString()}][${message.role}] ${message.content}\n`
       }
-      const logEntry = `[${new Date().toISOString()}] ${message}\n`
       fs.appendFileSync(logFile, logEntry)
       return true
     } catch (error) {

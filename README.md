@@ -159,6 +159,11 @@ ai skill del <name|index> # Remove a skill by name or index, exp: ai skill del 1
 ai skill install <url> # Install a skill from ClawHub，exp: ai skill install https://clawhub.ai/TheSethRose/agent-browser
 ai skill enable <name|index> # Enable a skill by name or index, exp: ai skill enable 1
 ai skill disable <name|index> # Disable a skill by name or index, exp: ai skill disable 1
+
+# History commands
+ai history clear # Clear the history messages
+ai history output # Output the history messages to current directory
+ai history dir # Open the history directory
 ```
 
 ### Configuration File Structure
@@ -181,8 +186,8 @@ module.exports = {
   ],
   currentAi: "default", // Name of the currently active AI configuration
   maxIterations: -1, // Maximum iterations for agent workflow, -1 for unlimited
-  maxMessagesLength: 50000, // Maximum compression length
-  maxMessagesCount: 40, // Maximum compression count
+  maxMessagesLength: 150000, // Maximum compression length, -1 for unlimited
+  maxMessagesCount: 100, // Maximum compression count, -1 for unlimited
   extensions: [], // List of extension file paths
   isLog: false // Whether to create workflow execution logs
 };

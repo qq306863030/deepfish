@@ -1,8 +1,8 @@
 /**
  * @Author: Roman 306863030@qq.com
  * @Date: 2026-03-16 09:18:05
- * @LastEditors: Roman 306863030@qq.com
- * @LastEditTime: 2026-03-24 14:16:54
+ * @LastEditors: roman_123 306863030@qq.com
+ * @LastEditTime: 2026-03-24 22:09:14
  * @FilePath: \deepfish\src\core\ai-services\AiWorker\AIMessageManager.js
  * @Description: 上下文管理-添加、自动压缩
  * @
@@ -53,8 +53,8 @@ class AIMessageManager {
     const currentLength = this._getLength(messages)
     const currentCount = messages.length
     if (
-      currentLength > this.config.maxMessagesLength ||
-      currentCount > this.config.maxMessagesCount
+      (this.config.maxMessagesLength !== -1 && currentLength > this.config.maxMessagesLength) ||
+      (this.config.maxMessagesCount !== -1 && currentCount > this.config.maxMessagesCount)
     ) {
       logInfo(
         `Managing messages: current length ${currentLength}, count ${currentCount}`,
@@ -73,6 +73,7 @@ class AIMessageManager {
         if (messages1.length > 0) {
           const summary1 = await this._getSummary(messages1)
           newMessages.push(summary1)
+          GlobalVariable.historyManager.log(summary1, true)
         }
         if (lastUserMessageIndex < messages.length - 2) {
           newMessages.push(messages[lastUserMessageIndex])
@@ -81,6 +82,7 @@ class AIMessageManager {
           if (messages2.length > 0) {
             const summary2 = await this._getSummary(messages2)
             newMessages.push(summary2)
+            GlobalVariable.historyManager.log(summary2, true)
           }
           newMessages.push(...messages.slice(-2))
         } else if (lastUserMessageIndex === messages.length - 2) {
@@ -90,7 +92,6 @@ class AIMessageManager {
           newMessages.push(messages[lastUserMessageIndex])
         }
         GlobalVariable.historyManager.record(newMessages)
-        GlobalVariable.historyManager.log(newMessages)
       } else if (messages.length === 2) {
         const summary = await this._getSummary([messages[1]])
         newMessages.push([messages[0], summary])

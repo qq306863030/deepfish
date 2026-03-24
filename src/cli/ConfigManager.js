@@ -4,6 +4,7 @@ const fs = require('fs-extra')
 const { defaultConfig } = require('./DefaultConfig')
 const { logSuccess, logError, logInfo } = require('../core/utils/log')
 const { GlobalVariable } = require('../core/globalVariable')
+const { merge } = require('lodash')
 
 class ConfigManager {
   config = null
@@ -27,6 +28,7 @@ class ConfigManager {
       this.writeConfig()
     }
     this.config = this.getConfig()
+    console.log(this.config)
   }
 
   dir() {
@@ -239,7 +241,8 @@ class ConfigManager {
   }
 
   getConfig() {
-    return require(this.configPath)
+    const config = require(this.configPath)
+    return merge(defaultConfig, config)
   }
 
   // 写入配置

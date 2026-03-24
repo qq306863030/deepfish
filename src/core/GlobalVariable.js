@@ -3,7 +3,6 @@ const GlobalVariable = {
   configManager: null,
   skillConfigManager: null,
   historyManager: null,
-  isRecovering: false
 }
 
 module.exports = {
