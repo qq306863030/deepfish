@@ -193,6 +193,7 @@ module.exports = {
   maxMessagesCount: 100, // Maximum compression count, -1 for unlimited
   maxHistoryExpireTime: 30, // Maximum session expiration time in days, -1 for unlimited, 0 to disable recording
   maxLogExpireTime: 3, // Log expiration time in days, -1 for unlimited, 0 to disable recording
+  maxBlockFileSize: 20, // Maximum block file size in KB; files exceeding this size need to be processed in blocks
   extensions: [], // List of extension file paths
   skills: [], // List of skill configurations
   encoding: "utf-8", // Command line encoding format, can be set to utf-8, gbk, etc., or auto/empty for auto-detection

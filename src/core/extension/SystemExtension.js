@@ -1,8 +1,8 @@
 /**
  * @Author: Roman 306863030@qq.com
  * @Date: 2026-03-17 11:59:19
- * @LastEditors: Roman 306863030@qq.com
- * @LastEditTime: 2026-03-25 20:05:23
+ * @LastEditors: roman_123 306863030@qq.com
+ * @LastEditTime: 2026-03-26 00:54:25
  * @FilePath: \deepfish\src\core\extension\SystemExtension.js
  * @Description: 默认扩展函数
  * @
@@ -132,7 +132,7 @@ async function getExtensionFileRule(goal) {
 基于指定规则创建一个标准化的Node.js NPM项目，实现用户目标：${goal}，最终输出符合AI工作流调用规范的函数模块，并配套中英文说明文档。
 
 ### 第一步：项目初始化
-1. 目录创建：新建目录，目录名称为「项目功能名称」，作为NPM项目根目录
+1. 目录创建：新建目录，目录名称以"deepfish-"开头,如"deepfish-「项目功能名称」"，作为NPM项目根目录
 2. package.json配置：
    - name字段值：@deepfish-ai/项目功能名称（替换「项目功能名称」为实际功能名）
    - git仓库地址：固定为 https://github.com/qq306863030/deepfish-extensions.git
@@ -155,11 +155,14 @@ async function getExtensionFileRule(goal) {
 2. 命名规范：
    - 函数名称前缀：「领域用途+分隔符」（如systemFileManagement_）
    - 函数描述开头：统一格式「领域用途+分隔符+功能描述」（如系统文件管理:重命名文件）
-3. 内置工具调用：函数内部可直接使用this.Tools下的内置方法，示例：
+3. 内置工具函数调用：函数内部会自动注入所有内置工具函数，可以通过this.Tools获取，示例：
    - this.Tools.requestAI(systemDescription, prompt, temperature)
    - this.Tools.readFile(filePath)
    - 其他文件处理类内置函数（运行时自动注入）
 4. 函数数量：至少包含1个可被AI工作流调用的函数
+5. 函数中的this在运行时指向DeepFish AI的运行时环境，可以通过this访问到AI配置、工具函数等资源，因此在创建扩展时需要注意this的指向
+6. 尽量保持代码思路清晰，避免过度复杂的逻辑嵌套，必要时可以适当拆分函数、添加注释说明或拆分成多个文件
+7. 需要创建的是DeepFish AI的扩展工具，并非创建Skill工具包，因此不需要编写SKILL.md文件
 
 #### 2.3 基础代码模板（必须遵循）
 const descriptions = []
@@ -238,6 +241,34 @@ function executeSkill(skillFilePath, subGoalPrompt = '') {
   }
   // 调用子工作流完成目标
   return this.aiService.subSkillWorkflow(skillContent, subGoalPrompt)
+}
+
+// 了解自己
+function getSelfInfo() {
+  // 返回自己的代码路径、package.json路径、readme路径等基本信息，供AI有选择的了解自己，回答用户的问题
+  const homeDir = path.resolve(__dirname, '../../../')
+  return {
+    codePath: {
+      description: 'DeepFish AI程序代码路径',
+      value: homeDir,
+    },
+    packageJsonPath: {
+      description: 'DeepFish AI程序package.json文件路径',
+      value: path.resolve(homeDir, 'package.json'),
+    },
+    readmeCNPath: {
+      description: 'DeepFish AI程序中文文档路径',
+      value: path.resolve(homeDir, 'README_CN.md'),
+    },
+    readmeENPath: {
+      description: 'DeepFish AI程序英文文档路径',
+      value: path.resolve(homeDir, 'README.md'),
+    },
+    version: {
+      description: 'DeepFish AI程序版本',
+      value: "v" + require(path.resolve(homeDir, 'package.json')).version,
+    }
+  }
 }
 
 const descriptions = [
@@ -351,6 +382,19 @@ const descriptions = [
       },
     },
   },
+  {
+    type: 'function',
+    function: {
+      name: 'getSelfInfo',
+      description:
+        '获取DeepFish AI程序的基本信息、命令行等，供AI有选择的了解自己，回答用户的问题。',
+      parameters: {
+        type: 'object',
+        properties: {},
+        required: [],
+      },
+    }
+  }
 ]
 const functions = {
   executeCommand,
@@ -360,6 +404,7 @@ const functions = {
   getAiConfig,
   getAiConfigPath,
   executeSkill,
+  getSelfInfo,
 }
 
 module.exports = {

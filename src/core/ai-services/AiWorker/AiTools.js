@@ -1,8 +1,8 @@
 /**
  * @Author: Roman 306863030@qq.com
  * @Date: 2026-03-17 09:12:22
- * @LastEditors: Roman 306863030@qq.com
- * @LastEditTime: 2026-03-25 19:56:42
+ * @LastEditors: roman_123 306863030@qq.com
+ * @LastEditTime: 2026-03-26 01:08:48
  * @FilePath: \deepfish\src\core\ai-services\AiWorker\AiTools.js
  * @Description: 对话初始化、对话请求
  * @
@@ -36,15 +36,17 @@ function getInitialMessages(goal) {
 }
 
 function getSystemPrompt() {
+  const config = GlobalVariable.aiCli.config
   const skillPrompt = GlobalVariable.skillConfigManager.preLoadSkills()
-  const systemDescription = `${AiAgentSystemPrompt}\n\n${skillPrompt}`
+  const systemDescription = `${AiAgentSystemPrompt.replace('20KB', `${config.maxBlockFileSize}KB`)}\n\n${skillPrompt}`
   return systemDescription
 }
 
 // 获取调用skill的初始message
 function getInitialMessagesForSkill(skillContent, goal) {
+  const config = GlobalVariable.aiCli.config
   const systemDescription = `
-${SkillAiAgentSystemPrompt}
+${SkillAiAgentSystemPrompt.replace('20KB', `${config.maxBlockFileSize}KB`)}
 ### 以下是加载完成的Skill.md文件的内容：
 ${skillContent}`
   return [
@@ -63,7 +65,7 @@ function getInitialMessagesForTest(goal) {
   return [
     {
       role: 'system',
-      content: TestAiAgentSystemPrompt,
+      content: TestAiAgentSystemPrompt.replace('20KB', `${GlobalVariable.aiCli.config.maxBlockFileSize}KB`),
     },
     {
       role: 'user',

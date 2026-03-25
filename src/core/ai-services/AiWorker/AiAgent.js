@@ -1,9 +1,9 @@
 /**
  * @Author: Roman 306863030@qq.com
  * @Date: 2026-03-16 09:18:05
- * @LastEditors: Roman 306863030@qq.com
- * @LastEditTime: 2026-03-17 10:00:20
- * @FilePath: \src\core\ai-services\AiWorker\AiAgent.js
+ * @LastEditors: roman_123 306863030@qq.com
+ * @LastEditTime: 2026-03-26 01:04:45
+ * @FilePath: \deepfish\src\core\ai-services\AiWorker\AiAgent.js
  * @Description: 工作流循环
  * @
  */
@@ -28,6 +28,7 @@ class AiAgent {
     this.aiConfig = aiConfig
     this.maxIterations =
       config.maxIterations === -1 ? Infinity : config.maxIterations
+    this.maxBlockFileSize = this.config.maxBlockFileSize || 20 // 默认20KB
     this.aiMessageManager = new AIMessageManager(aiClient, config, aiConfig, [])
     this.extensionTools = extensionTools
     this.name = config.name
@@ -97,7 +98,7 @@ class AiAgent {
             const fileInfo = await this.extensionTools.functions['getFileInfo'](
               parsedArgs.filePath,
             )
-            if (fileInfo && fileInfo.isFile && fileInfo.size > 10 * 1024) {
+            if (fileInfo && fileInfo.isFile && fileInfo.size > this.maxBlockFileSize * 1024) {
               this.aiMessageManager.addTool(id, {
                 error:
                   '文件过大，请使用executeJSCode工具编写脚本分块读取和处理文件，避免一次性读取整个文件内容到对话中。建议使用fs.createReadStream逐行或分块读取，仅返回必要的结果或总结。',
@@ -110,7 +111,7 @@ class AiAgent {
           let result = await toolFunction(...Object.values(parsedArgs))
           let toolContent = JSON.stringify(result)
           if (name !== 'requestAI') {
-            const MAX_CONTENT_SIZE = 100000
+            const MAX_CONTENT_SIZE = this.maxBlockFileSize * 1024
             if (toolContent.length > MAX_CONTENT_SIZE) {
               if (
                 typeof result === 'string' &&
