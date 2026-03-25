@@ -1,8 +1,8 @@
 /**
  * @Author: Roman 306863030@qq.com
  * @Date: 2026-03-17 11:59:19
- * @LastEditors: roman_123 306863030@qq.com
- * @LastEditTime: 2026-03-24 23:45:22
+ * @LastEditors: Roman 306863030@qq.com
+ * @LastEditTime: 2026-03-25 14:14:05
  * @FilePath: \deepfish\src\core\extension\ExtensionManager.js
  * @Description: 扩展函数管理
  * @
@@ -17,9 +17,6 @@ const fs = require('fs-extra')
 const axios = require('axios')
 const dayjs = require('dayjs')
 const lodash = require('lodash')
-const shelljs = require('shelljs')
-const iconv = require('iconv-lite') // 用于编码转换
-const os = require('os') // 用于判断系统类型
 const { logError } = require('../utils/log')
 const { getGlobalNodeModulesPath } = require('../utils/node-root')
 
@@ -70,6 +67,9 @@ class ExtensionManager {
 
         // 动态加载扩展模块
         let { descriptions, functions } = require(resolvedPath)
+        if (!descriptions || !functions) {
+          continue
+        }
         descriptions = descriptions.map((item) => {
           if (!item.type) {
             return {
@@ -193,49 +193,6 @@ class ExtensionManager {
       }
     }
     return null
-  }
-
-  _executeCommand(command) {
-    return new Promise((resolve, reject) => {
-      const platform = os.platform()
-      const targetEncoding = platform === 'win32' ? 'gbk' : 'utf-8' // Windows(含PowerShell)用gbk，Linux/macOS用utf-8
-      shelljs.exec(
-        command,
-        {
-          async: true,
-          cwd: process.cwd(),
-          encoding: 'binary',
-          silent: true,
-        },
-        (code, stdout, stderr) => {
-          try {
-            const stdoutUtf8 = iconv.decode(
-              Buffer.from(stdout, 'binary'),
-              targetEncoding,
-            )
-            const stderrUtf8 = iconv.decode(
-              Buffer.from(stderr, 'binary'),
-              targetEncoding,
-            )
-            if (stderrUtf8 && !stderrUtf8.trim().startsWith('WARNING')) {
-              // 过滤无关警告
-              const error = new Error(
-                `Command failed (code ${code}): ${stderrUtf8}`,
-              )
-              reject(error)
-              return
-            }
-            resolve(stdoutUtf8)
-          } catch (decodeError) {
-            reject(
-              new Error(
-                `Failed to parse command output: ${decodeError.message}`,
-              ),
-            )
-          }
-        },
-      )
-    })
   }
 }
 

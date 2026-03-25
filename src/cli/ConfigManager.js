@@ -28,6 +28,7 @@ class ConfigManager {
       this.writeConfig()
     }
     this.config = this.getConfig()
+    this.writeConfig(this.config)
   }
 
   dir() {
@@ -99,6 +100,7 @@ class ConfigManager {
     this.config.ai.push(aiConfig)
     this.writeConfig(this.config)
     logSuccess(`AI configuration "${aiConfig.name}" added successfully!`)
+    return aiConfig
   }
 
   // 删除一个aiConfig

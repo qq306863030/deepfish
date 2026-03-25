@@ -1,8 +1,8 @@
 /**
  * @Author: Roman 306863030@qq.com
  * @Date: 2026-03-19 11:45:10
- * @LastEditors: roman_123 306863030@qq.com
- * @LastEditTime: 2026-03-24 22:02:52
+ * @LastEditors: Roman 306863030@qq.com
+ * @LastEditTime: 2026-03-25 13:37:31
  * @FilePath: \deepfish\src\cli\ai-config.js
  * @Description: ai config 相关命令
  * @
@@ -65,6 +65,10 @@ configCommand
           }
           const hasName = configManager.checkName(value.trim())
           if (hasName) {
+            setTimeout(() => {
+              // 结束会话
+              process.exit(0)
+            })
             return 'Configuration with this name already exists. Please enter a different name.'
           }
           return true
@@ -168,7 +172,8 @@ configCommand
       maxTokens: answers.maxTokens,
       stream: answers.stream,
     }
-    configManager.addAiConfig(aiConfig)
+    console.log(aiConfig)
+    return configManager.addAiConfig(aiConfig)
   })
 
 configCommand
