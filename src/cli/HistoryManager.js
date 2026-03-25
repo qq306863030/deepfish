@@ -1,8 +1,8 @@
 /**
  * @Author: Roman 306863030@qq.com
  * @Date: 2026-03-16 09:18:05
- * @LastEditors: roman_123 306863030@qq.com
- * @LastEditTime: 2026-03-24 21:50:35
+ * @LastEditors: Roman 306863030@qq.com
+ * @LastEditTime: 2026-03-25 10:28:41
  * @FilePath: \deepfish\src\cli\HistoryManager.js
  * @Description: 对话历史记录、恢复
  * @
@@ -25,6 +25,7 @@ class HistoryManager {
     this.id = null
     this.logDir = null
     this.initRecord()
+    this.autoClearLog()
   }
 
   initRecord() {
@@ -85,7 +86,13 @@ class HistoryManager {
   }
 
   autoClearRecord() {
-    const retentionDays = 7
+    const config = this.configManager.getConfig()
+    const retentionDays = config.maxHistoryExpireTime || 30
+    if (retentionDays === -1) {
+      return
+    } else if (retentionDays === 0) {
+      this.clearMessage()
+    }
     const currentDate = dayjs()
     const history = this.history.filter(
       (item) => currentDate.diff(dayjs(item.execTime), 'day') > retentionDays,
@@ -103,18 +110,49 @@ class HistoryManager {
     }
   }
 
+  autoClearLog() {
+    const config = this.configManager.getConfig()
+    const retentionDays = config.maxLogExpireTime || 3
+    if (retentionDays === -1) {
+      return
+    }
+    if (this.history.length > 0) {
+      this.history.forEach((item) => {
+        const currentDate = dayjs()
+        const logDir = path.join(this.cacheDir, item.id, 'logs')
+        const logFiles = fs.readdirSync(logDir)
+        logFiles.forEach((logFile) => {
+          // 解析日志文件名中的日期
+          if (logFile.startsWith('log-') && logFile.endsWith('.txt')) {
+            const logDate = dayjs(logFile.slice(4, -4))
+            if (currentDate.diff(logDate, 'day') > retentionDays) {
+              fs.removeSync(path.join(logDir, logFile))
+            }
+          }
+        })
+      })
+    }
+  }
+
   clearMessage() {
     const messageFile = path.join(this.cacheDir, this.id, 'message.json')
-    fs.writeJsonSync(messageFile, [], { spaces: 2 })
+    if (fs.existsSync(messageFile)) {
+      fs.writeJsonSync(messageFile, [], { spaces: 2 })
+    }
   }
 
   updateMessage(message) {
     const messageFile = path.join(this.cacheDir, this.id, 'message.json')
-    fs.writeJsonSync(messageFile, message, { spaces: 2 })
+    if (fs.pathExistsSync(messageFile)) {
+      fs.writeJsonSync(messageFile, message, { spaces: 2 })
+    }
   }
 
   getMessage() {
     const messageFile = path.join(this.cacheDir, this.id, 'message.json')
+    if (!fs.pathExistsSync(messageFile)) {
+      return []
+    }
     return fs.readJsonSync(messageFile, { throws: false }) || []
   }
 
@@ -144,6 +182,10 @@ class HistoryManager {
 
   record(messages) {
     try {
+      const config = this.configManager.getConfig()
+      if (config.maxHistoryExpireTime === 0) {
+        return false
+      }
       this.updateMessage(messages)
       return true
     } catch (error) {
@@ -154,6 +196,10 @@ class HistoryManager {
 
   // 记录message以及压缩后的messages
   log(message, isCompress = false) {
+    const config = this.configManager.getConfig()
+    if (config.maxLogExpireTime === 0) {
+      return false
+    }
     const logFile = path.join(
       this.logDir,
       `log-${dayjs().format('YYYY-MM-DD HH')}.txt`,

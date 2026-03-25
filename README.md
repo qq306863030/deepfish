@@ -188,8 +188,11 @@ module.exports = {
   maxIterations: -1, // Maximum iterations for agent workflow, -1 for unlimited
   maxMessagesLength: 150000, // Maximum compression length, -1 for unlimited
   maxMessagesCount: 100, // Maximum compression count, -1 for unlimited
+  maxHistoryExpireTime: 30, // Maximum session expiration time in days, -1 for unlimited, 0 to disable recording
+  maxLogExpireTime: 3, // Log expiration time in days, -1 for unlimited, 0 to disable recording
   extensions: [], // List of extension file paths
-  isLog: false // Whether to create workflow execution logs
+  skills: [], // List of skill configurations
+  encoding: "", // Command line encoding format
 };
 ```
 
