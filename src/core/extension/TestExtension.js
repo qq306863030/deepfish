@@ -21,7 +21,7 @@ const descriptions = [
     function: {
       name: "generateTestTaskRule",
       description:
-        "根据用户提供的程序功能测试目标，生成一份标准化的Markdown格式功能测试说明文档的规则提示词。返回的提示词将指导AI生成包含完整测试用例（测试步骤、期望结果、用例编号）的测试文档。适用于用户需要对程序进行功能测试、回归测试、验收测试等场景。",
+        "根据用户提供的程序功能测试目标，生成一份标准化的Markdown格式功能测试说明文档的规则提示词。返回的提示词将指导AI生成包含完整测试用例（测试步骤、期望结果、用例编号）的测试文档。适用于用户需要对程序进行功能测试等场景。",
       parameters: {
         type: "object",
         properties: {
@@ -39,7 +39,7 @@ const descriptions = [
     function: {
       name: "executeTestTask",
       description:
-        "执行测试任务，启动一个专用的AI子工作流来完成指定的测试目标。子工作流将根据测试任务描述，自动执行测试步骤并验证测试结果。适用于需要AI自动化执行功能测试的场景。",
+        "执行测试任务，启动一个专用的AI子工作流来完成指定的某一项测试目标。子工作流将根据测试任务描述，自动执行测试步骤并验证测试结果。适用于需要AI自动化执行功能测试的场景。",
       parameters: {
         type: "object",
         properties: {

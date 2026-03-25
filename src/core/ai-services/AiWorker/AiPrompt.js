@@ -1,8 +1,8 @@
 /**
  * @Author: Roman 306863030@qq.com
  * @Date: 2026-03-17 09:12:22
- * @LastEditors: roman_123 306863030@qq.com
- * @LastEditTime: 2026-03-24 22:43:52
+ * @LastEditors: Roman 306863030@qq.com
+ * @LastEditTime: 2026-03-25 09:23:08
  * @FilePath: \deepfish\src\core\ai-services\AiWorker\AiPrompt.js
  * @Description: AI请求提示词
  * @
@@ -69,6 +69,13 @@ const TestAiAgentSystemPrompt = `
 
 ### 工具使用规则
 工具调用需确保语法/指令符合当前操作系统规范（Windows/macOS/Linux 区分）。
+
+### 测试规则
+1. 仔细分析测试目标，确保完全理解测试需求和预期结果；
+2. 在测试过程中可以通过创建前缀为"test_"的临时文件辅助测试，完成后需删除这些临时文件；
+3. 在测试过程中随意不能修改原有的文件内容；
+3. 如果发现不能使用工具函数完成测试任务，则直接说明原因，不要做过多尝试；
+4. 任务完成后，反馈测试执行结果。
   `
 
 module.exports = {
