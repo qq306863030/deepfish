@@ -2,7 +2,7 @@
  * @Author: Roman 306863030@qq.com
  * @Date: 2026-03-16 09:18:05
  * @LastEditors: Roman 306863030@qq.com
- * @LastEditTime: 2026-03-25 18:58:27
+ * @LastEditTime: 2026-03-25 19:54:59
  * @FilePath: \deepfish\src\core\ai-services\AiWorker\index.js
  * @Description: 工作流类
  * @
@@ -32,7 +32,9 @@ class AiWorker {
         // 更新系统skill提示词
         const systemPrompt = getSystemPrompt()
         messages[0].content = systemPrompt
-        await this.loadHhistoryMessages(messages)
+        this.clearUserMessage(messages)
+        this.messages = messages
+        // await this.loadHhistoryMessages(messages)
         await this.main(goal)
       } else {
         this.messages = getInitialMessages(goal)
@@ -44,7 +46,6 @@ class AiWorker {
         role: 'user',
         content: goal,
       })
-      console.log('Updated messages with new goal, starting work loop...')
       await this.aiAgent.work(this.messages)
     }
   }
@@ -69,6 +70,16 @@ class AiWorker {
     )
     const initMessages = getInitialMessagesForTest(goal)
     return aiAgent.work(initMessages)
+  }
+
+  clearUserMessage(messages) {
+    while (messages.length > 0 && messages[messages.length - 1].role === 'user') {
+      messages.pop()
+    }
+    const lastMessage = messages[messages.length - 1]
+    if (lastMessage.role === 'assistant' && lastMessage.tool_calls) {
+      messages.pop()
+    }
   }
 
   async loadHhistoryMessages(messages) {

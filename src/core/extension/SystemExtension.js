@@ -2,7 +2,7 @@
  * @Author: Roman 306863030@qq.com
  * @Date: 2026-03-17 11:59:19
  * @LastEditors: Roman 306863030@qq.com
- * @LastEditTime: 2026-03-25 18:53:17
+ * @LastEditTime: 2026-03-25 20:05:23
  * @FilePath: \deepfish\src\core\extension\SystemExtension.js
  * @Description: 默认扩展函数
  * @
@@ -17,8 +17,8 @@ const { detectEncoding } = require('../utils/normal')
 
 // 执行系统命令
 // 执行系统命令（全平台兼容：Windows/PowerShell/CentOS）
-function executeCommand(command) {
-  logSuccess(`Executing system command: ${command}`)
+function executeCommand(command, timeout = -1) {
+  logSuccess(`Executing system command: ${command}; ${timeout > 0 ? `Timeout: ${timeout}ms` : 'No timeout limit'}`)
   try {
     const result = spawnSync(command, {
       cwd: process.cwd(),
@@ -27,6 +27,7 @@ function executeCommand(command) {
       encoding: 'buffer',
       windowsHide: true,
       argv0: 'deepfish-shell',
+      timeout: timeout > 0 ? timeout : undefined,
     })
     let targetEncoding = this.config?.encoding
     if (!targetEncoding || targetEncoding === 'auto') {
@@ -143,7 +144,9 @@ async function getExtensionFileRule(goal) {
 
 ### 第二步：index.js 完整开发规范
 #### 2.1 核心输出要求
-文件需输出两个核心字段，且代码逻辑清晰、可运行：
+文件需输出四个核心字段，且代码逻辑清晰、可运行：
+- name：字符串类型，扩展的名称标识
+- extensionDescription：字符串类型，扩展功能的简要描述，说明该扩展提供的核心能力
 - descriptions：数组类型，每个元素为OpenAI可识别的函数描述对象
 - functions：对象类型，key为函数名称，value为函数方法体
 
@@ -162,6 +165,8 @@ async function getExtensionFileRule(goal) {
 const descriptions = []
 const functions = {}
 module.exports = {
+  name: '扩展名称',
+  extensionDescription: '扩展功能的简要描述',
   descriptions,
   functions,
 }
@@ -186,6 +191,8 @@ const functions = {
   },
 }
 module.exports = {
+  name: 'systemFileManagement',
+  extensionDescription: '提供文件管理相关功能，包括文件重命名等操作',
   descriptions,
   functions,
 }
@@ -239,11 +246,12 @@ const descriptions = [
     function: {
       name: 'executeCommand',
       description:
-        '执行系统命令，返回执行结果。适用于运行shell命令、系统工具等。注意：如果执行多条命令，且需要保持会话，使用命令链的方式执行。命令执行失败时会抛出错误，成功时返回命令执行结果字符串或"System command executed successfully"。',
+        '执行系统命令，返回执行结果。适用于运行shell命令、系统工具等。command为需要执行的系统命令字符串，如"ls -l"; timeout为命令执行的超时时间，单位为毫秒，-1表示不限制超时时间, 默认值为-1。注意：如果执行多条命令，且需要保持会话，使用命令链的方式执行。命令执行失败时会抛出错误，成功时返回命令执行结果字符串或"System command executed successfully"。',
       parameters: {
         type: 'object',
         properties: {
           command: { type: 'string' },
+          timeout: { type: 'number' },
         },
         required: ['command'],
       },
@@ -355,6 +363,8 @@ const functions = {
 }
 
 module.exports = {
+  name: 'SystemExtension',
+  extensionDescription: "提供系统命令执行、AI请求、JS代码执行、扩展文件生成规则、AI配置管理、Skill加载执行等核心系统功能",
   descriptions,
   functions,
 }

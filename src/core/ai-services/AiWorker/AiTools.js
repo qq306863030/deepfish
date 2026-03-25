@@ -2,7 +2,7 @@
  * @Author: Roman 306863030@qq.com
  * @Date: 2026-03-17 09:12:22
  * @LastEditors: Roman 306863030@qq.com
- * @LastEditTime: 2026-03-25 18:10:32
+ * @LastEditTime: 2026-03-25 19:56:42
  * @FilePath: \deepfish\src\core\ai-services\AiWorker\AiTools.js
  * @Description: 对话初始化、对话请求
  * @
@@ -192,13 +192,13 @@ async function _streamToNonStream(stream) {
       if (reasoning_content) {
         finalResponse.choices[0].message.reasoning_content += reasoning_content
         // 流式输出
-        streamOutput(reasoning_content)
+        streamOutput(reasoning_content, '#47854a')
       }
       const content = delta.content
       if (content) {
         finalResponse.choices[0].message.content += content
         // 流式输出
-        streamOutput(content)
+        streamOutput(content, '#68e46e')
       }
       // 3. 处理工具调用（核心逻辑）
       if (delta.tool_calls && delta.tool_calls.length > 0) {
@@ -224,7 +224,7 @@ async function _streamToNonStream(stream) {
             const toolCall = toolCallBuffers.get(id)
             if (toolCall && toolCallChunk.function?.arguments) {
               toolCall.function.arguments += toolCallChunk.function.arguments
-              streamOutput(toolCallChunk.function.arguments)
+              streamOutput(toolCallChunk.function.arguments, '#47854a')
             }
           }
         })

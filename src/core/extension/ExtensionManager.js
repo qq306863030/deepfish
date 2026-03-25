@@ -2,7 +2,7 @@
  * @Author: Roman 306863030@qq.com
  * @Date: 2026-03-17 11:59:19
  * @LastEditors: Roman 306863030@qq.com
- * @LastEditTime: 2026-03-25 14:14:05
+ * @LastEditTime: 2026-03-25 19:28:32
  * @FilePath: \deepfish\src\core\extension\ExtensionManager.js
  * @Description: 扩展函数管理
  * @
@@ -101,6 +101,11 @@ class ExtensionManager {
     functions['axios'] = axios
     functions['dayjs'] = dayjs
     functions['lodash'] = lodash
+    // 根据名称去重
+    this.extensions.descriptions = lodash.uniqBy(
+      this.extensions.descriptions,
+      'function.name',
+    )
   }
 
   // 自动扫描node_modules和命令执行目录下的扩展模块
