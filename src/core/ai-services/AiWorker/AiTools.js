@@ -2,14 +2,24 @@
  * @Author: Roman 306863030@qq.com
  * @Date: 2026-03-17 09:12:22
  * @LastEditors: Roman 306863030@qq.com
- * @LastEditTime: 2026-03-26 11:40:54
+ * @LastEditTime: 2026-03-26 15:27:15
  * @FilePath: \deepfish\src\core\ai-services\AiWorker\AiTools.js
  * @Description: 对话初始化、对话请求
  * @
  */
 const { OpenAI } = require('openai')
-const { AiAgentSystemPrompt, SkillAiAgentSystemPrompt, TestAiAgentSystemPrompt, TaskAiAgentSystemPrompt } = require('./AiPrompt')
-const { streamOutput, streamLineBreak, logError } = require('../../utils/log')
+const {
+  AiAgentSystemPrompt,
+  SkillAiAgentSystemPrompt,
+  TestAiAgentSystemPrompt,
+  TaskAiAgentSystemPrompt,
+} = require('./AiPrompt')
+const {
+  streamOutput,
+  streamLineBreak,
+  logError,
+  loading,
+} = require('../../utils/log')
 const { GlobalVariable } = require('../../globalVariable')
 
 // 创建client
@@ -36,17 +46,15 @@ function getInitialMessages(goal) {
 }
 
 function getSystemPrompt() {
-  const config = GlobalVariable.aiCli.config
   const skillPrompt = GlobalVariable.skillConfigManager.preLoadSkills()
-  const systemDescription = `${AiAgentSystemPrompt.replace('20KB', `${config.maxBlockFileSize}KB`)}\n\n${skillPrompt}`
+  const systemDescription = `${AiAgentSystemPrompt()}\n\n${skillPrompt}`
   return systemDescription
 }
 
 // 获取调用skill的初始message
 function getInitialMessagesForSkill(skillContent, goal) {
-  const config = GlobalVariable.aiCli.config
   const systemDescription = `
-${SkillAiAgentSystemPrompt.replace('20KB', `${config.maxBlockFileSize}KB`)}
+${SkillAiAgentSystemPrompt()}
 ### 以下是加载完成的Skill.md文件的内容：
 ${skillContent}`
   return [
@@ -62,10 +70,12 @@ ${skillContent}`
 }
 
 function getInitialMessagesForTest(goal) {
+  const skillPrompt = GlobalVariable.skillConfigManager.preLoadSkills()
+  const systemDescription = `${TestAiAgentSystemPrompt()}\n\n${skillPrompt}`
   return [
     {
       role: 'system',
-      content: TestAiAgentSystemPrompt.replace('20KB', `${GlobalVariable.aiCli.config.maxBlockFileSize}KB`),
+      content: systemDescription,
     },
     {
       role: 'user',
@@ -78,10 +88,13 @@ function getInitialMessagesForTest(goal) {
 async function getInitialMessagesForTask(mainMessages, goal) {
   // 对主任务的上下文进行摘要总结，生成总体任务规划、当前进度、待办事项等，作为子任务的一部分系统提示词，能够指导子任务更好地完成目标
   const summary = await _mainTaskSummary(mainMessages)
+  const skillPrompt = GlobalVariable.skillConfigManager.preLoadSkills()
+  const systemDescription =
+    TaskAiAgentSystemPrompt() + '\n\n' + summary + '\n\n' + skillPrompt
   return [
     {
       role: 'system',
-      content: TaskAiAgentSystemPrompt.replace('20KB', `${GlobalVariable.aiCli.config.maxBlockFileSize}KB`) + '\n\n' + summary,
+      content: systemDescription,
     },
     {
       role: 'user',
@@ -96,8 +109,8 @@ async function _mainTaskSummary(mainMessages) {
     return ''
   }
   // 对主任务的上下文进行摘要总结，生成总体任务规划、当前进度、待办事项等，作为子任务的一部分系统提示词，能够指导子任务更好地完成目标
-  const summaryPrompt = `你是“子任务上下文整理器”。
-请基于下面的主任务对话历史，生成一个可直接提供给子任务使用的“执行摘要”。
+  const systemPrompt = `你是“子任务上下文整理器”。
+请基于主任务对话历史，生成一个可直接提供给子任务使用的“执行摘要”。
 
 摘要目标：
 1. 明确主任务的最终目标与验收标准；
@@ -126,7 +139,8 @@ async function _mainTaskSummary(mainMessages) {
 
 【关键约束与上下文】
 - ...
-
+`
+  const summaryPrompt = `
 Conversation history:
 ${mainMessages
   .map((m) => {
@@ -137,20 +151,22 @@ ${mainMessages
     if (m.role === 'tool') return `[TOOL RESULT]: ${m.content}`
     return ''
   })
-  .join('\n')}`
-    try {
-      const summary = await aiRequestSingle(
-        this.aiClient,
-        this.aiConfig,
-        summaryPrompt,
-      )
-      return summary
-    } catch (error) {
-      logError('Failed to summarize messages to sub task: ' + error.message)
-      return ''
-    }
+  .join('\n')}
+`
+  try {
+    const aiCli = GlobalVariable.aiCli
+    const summary = await aiRequestSingle(
+      aiCli.aiService.client,
+      aiCli.aiConfig,
+      systemPrompt,
+      summaryPrompt,
+    )
+    return summary
+  } catch (error) {
+    logError('Failed to summarize messages to sub task: ' + error.message)
+    return ''
+  }
 }
-
 
 /**
  * Ai单轮问答
@@ -168,22 +184,29 @@ async function aiRequestSingle(
   prompt,
   isOnline = false,
 ) {
-  const messages = []
-  messages.push({
-    role: 'system',
-    content: systemDescription,
-  })
-  messages.push({
-    role: 'user',
-    content: prompt,
-  })
-  const opt = {
-    messages: messages,
-    ...aiConfig,
-    stream: false,
+  let loadingStop = loading('Thinking...')
+  try {
+    const messages = []
+    messages.push({
+      role: 'system',
+      content: systemDescription,
+    })
+    messages.push({
+      role: 'user',
+      content: prompt,
+    })
+    const opt = {
+      messages: messages,
+      ...aiConfig,
+      stream: false,
+    }
+    const response = await openAiClient.chat.completions.create(opt)
+    loadingStop('AI have finished thinking.')
+    return response.choices[0].message.content
+  } catch (error) {
+    loadingStop('AI process terminated unexpectedly: ' + error.message, true)
+    return `AI response error: ${error.message}`
   }
-  const response = await openAiClient.chat.completions.create(opt)
-  return response.choices[0].message.content
 }
 /**
  * Ai携带工具请求

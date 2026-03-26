@@ -276,6 +276,13 @@ ai "I have ffmpeg5 installed on my system, help me convert all MP4 files in the 
 ai "Classify all files under the 'model' directory into the 'model2' directory by month, date format YYYY-MM"
 ```
 
+**Task List Execution:**
+
+```bash
+ai "Create a task list: 1.xxxx; 2.xxxx; ..."
+ai "Execute task list" # Start execution
+```
+
 ## 6. Extension Development
 
 Extensions allow you to add custom functions that AI can use in its workflows. For complex processes, you can develop them yourself or try generating extensions using this program, then register the extension with the program and use the command line to complete tasks.

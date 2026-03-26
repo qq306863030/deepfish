@@ -2,7 +2,7 @@
  * @Author: Roman 306863030@qq.com
  * @Date: 2026-03-17 11:59:19
  * @LastEditors: Roman 306863030@qq.com
- * @LastEditTime: 2026-03-25 19:28:32
+ * @LastEditTime: 2026-03-26 14:22:27
  * @FilePath: \deepfish\src\core\extension\ExtensionManager.js
  * @Description: 扩展函数管理
  * @
@@ -19,6 +19,7 @@ const dayjs = require('dayjs')
 const lodash = require('lodash')
 const { logError } = require('../utils/log')
 const { getGlobalNodeModulesPath } = require('../utils/node-root')
+const TaskExtension = require('./TaskExtension')
 
 class ExtensionManager {
   constructor(aiCli) {
@@ -37,6 +38,7 @@ class ExtensionManager {
       FileExtension.descriptions,
       InquirerExtension.descriptions,
       TestExtension.descriptions,
+      TaskExtension.descriptions,
       BaseExtension.descriptions
     )
     this.extensions.functions = Object.assign(
@@ -45,7 +47,7 @@ class ExtensionManager {
       FileExtension.functions,
       InquirerExtension.functions,
       TestExtension.functions,
-      BaseExtension.functions
+      TaskExtension.functions,
     )
   }
 

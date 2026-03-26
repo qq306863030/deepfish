@@ -1,85 +1,40 @@
-const { default: inquirer } = require('inquirer')
+const { askConfirm, askInput, askList, askNumber, askAny } = require('../utils/log')
 
 // 判断问答
-async function askConfirm(name, message, defaultVal = true, opt = {}) {
-  const questions = [
-    {
-      type: 'confirm',
-      name,
-      message,
-      default: defaultVal,
-      ...opt,
-    },
-  ]
-  const answers = await inquirer.prompt(questions)
-  return answers[name]
+async function inquirerConfirm(message, defaultVal = true, opt = {}) {
+  return askConfirm(message, defaultVal = true, opt = {})
 }
 
 // 选择问答
-function askList(name, message, choices, defaultVal = 0, opt = {}) {
-  const questions = [
-    {
-      type: 'list',
-      name,
-      message,
-      choices,
-      default: defaultVal,
-      ...opt,
-    },
-  ]
-  return inquirer.prompt(questions)
+function inquirerList(message, choices, defaultVal = 0, opt = {}) {
+  return askList(message, choices, defaultVal = 0, opt = {})
 }
 
 // 输入问答
-async function askInput(name, message, defaultVal = '', opt = {}) {
-  const questions = [
-    {
-      type: 'input',
-      name,
-      message,
-      default: defaultVal,
-      ...opt,
-    },
-  ]
-  const answers = await inquirer.prompt(questions)
-  return answers[name]
+async function inquirerInput(message, defaultVal = '', opt = {}) {
+  return askInput(message, defaultVal = '', opt = {})
 }
 
 // 输入数字
-async function askNumber(name, message, defaultVal = 0, opt = {}) {
-  const questions = [
-    {
-      type: 'number',
-      name,
-      message,
-      default: defaultVal,
-      ...opt,
-    },
-  ]
-  const answers = await inquirer.prompt(questions)
-  return answers[name]
+async function inquirerNumber(message, defaultVal = 0, opt = {}) {
+  return askNumber(message, defaultVal = 0, opt = {})
 }
 
 // 输入任何
-function askAny(questions) {
-  return inquirer.prompt(questions)
+function inquirerAny(questions) {
+  return askAny(questions)
 }
 
 const descriptions = [
   {
     type: 'function',
     function: {
-      name: 'askConfirm',
+      name: 'inquirerConfirm',
       description:
-        '用户交互：基于inquirer的confirm类型封装，提示用户确认问题，用户输入Y/N后返回布尔值（true/false）。参数说明(不是对象参数)：name-问题标识名称；message-显示给用户的问题文本；defaultVal-默认布尔值（默认true）；opt-inquirer额外配置选项对象。',
+        '用户交互：提示用户确认问题，用户输入Y/N后返回布尔值（true/false）。message-显示给用户的问题文本；defaultVal-默认布尔值（默认true）；opt-inquirer额外配置选项对象（可选）。',
       parameters: {
         type: 'object',
         properties: {
-          name: {
-            type: 'string',
-            description:
-              "问题的唯一标识名称，用于从返回结果中提取该问题的答案，例如 'confirmDelete'、'agreeLicense'",
-          },
           message: {
             type: 'string',
             description:
@@ -93,27 +48,22 @@ const descriptions = [
           opt: {
             type: 'object',
             description:
-              'inquirer额外配置选项对象，可选。支持的字段包括：when（条件函数，控制是否显示此问题）、prefix（问题前缀符号）、suffix（问题后缀符号）、transformer（显示值转换函数）等',
+              'inquirer额外配置选项对象，可选。支持的字段包括：when（条件函数）、prefix（问题前缀符号）、suffix（问题后缀符号）等',
           },
         },
-        required: ['name', 'message'],
+        required: ['message'],
       },
     },
   },
   {
     type: 'function',
     function: {
-      name: 'askList',
+      name: 'inquirerList',
       description:
-        '用户交互：基于inquirer的list类型封装，提示用户从列表中选择一项，返回包含用户选择结果的对象（{choices => items => name: 选中值}）。参数说明(不是对象参数)：name-问题标识名称；message-显示给用户的提示文本；choices-选项数组（字符串或{name,value,short}对象）；defaultVal-默认选中索引（默认0）；opt-inquirer额外配置选项对象。',
+        '用户交互：提示用户从列表中选择一项，返回用户选中的值。message-显示给用户的提示文本；choices-选项数组（字符串或{name,value,short}对象）；defaultVal-默认选中索引（默认0）；opt-inquirer额外配置选项对象（可选）。',
       parameters: {
         type: 'object',
         properties: {
-          name: {
-            type: 'string',
-            description:
-              "问题的唯一标识名称，用于从返回对象中提取选择结果，例如 'language'、'theme'。返回值格式为 {[name]: 选中项的value}",
-          },
           message: {
             type: 'string',
             description:
@@ -149,24 +99,19 @@ const descriptions = [
               'inquirer额外配置选项对象，可选。支持的字段包括：loop（布尔值，是否循环滚动列表，默认true）、pageSize（数字，一次显示的选项数量，超出则滚动）、when（条件函数）、filter（结果过滤函数）等',
           },
         },
-        required: ['name', 'message', 'choices'],
+        required: ['message', 'choices'],
       },
     },
   },
   {
     type: 'function',
     function: {
-      name: 'askInput',
+      name: 'inquirerInput',
       description:
-        '用户交互：基于inquirer的input类型封装，提示用户输入一段文本，返回用户输入的字符串。参数说明(不是对象参数)：name-问题标识名称；message-显示给用户的提示文本；defaultVal-默认输入值（默认空字符串）；opt-inquirer额外配置选项对象（支持validate、filter等）。',
+        '用户交互：提示用户输入一段文本，返回用户输入的字符串。message-显示给用户的提示文本；defaultVal-默认输入值（默认空字符串）；opt-inquirer额外配置选项对象（支持validate、filter等，可选）。',
       parameters: {
         type: 'object',
         properties: {
-          name: {
-            type: 'string',
-            description:
-              "问题的唯一标识名称，用于从返回结果中提取输入内容，例如 'username'、'filePath'",
-          },
           message: {
             type: 'string',
             description:
@@ -180,27 +125,22 @@ const descriptions = [
           opt: {
             type: 'object',
             description:
-              'inquirer额外配置选项对象，可选。支持的字段包括：validate（校验函数，接收输入值返回true或错误提示字符串）、filter（过滤函数，对用户输入进行转换处理）、transformer（显示转换函数，不影响实际值）、when（条件函数）等',
+              'inquirer额外配置选项对象，可选。支持的字段包括：validate（校验函数，接收输入值返回true或错误提示字符串）、filter（过滤函数）、transformer（显示转换函数）、when（条件函数）等',
           },
         },
-        required: ['name', 'message'],
+        required: ['message'],
       },
     },
   },
   {
     type: 'function',
     function: {
-      name: 'askNumber',
+      name: 'inquirerNumber',
       description:
-        '用户交互：基于inquirer的number类型封装，提示用户输入一个数字，返回Number类型值（非数字输入返回NaN）。参数说明(不是对象参数)：name-问题标识名称；message-显示给用户的提示文本；defaultVal-默认数字值（默认0）；opt-inquirer额外配置选项对象（支持validate、filter等）。',
+        '用户交互：提示用户输入一个数字，返回Number类型值（非数字输入返回NaN）。message-显示给用户的提示文本；defaultVal-默认数字值（默认0）；opt-inquirer额外配置选项对象（支持validate、filter等，可选）。',
       parameters: {
         type: 'object',
         properties: {
-          name: {
-            type: 'string',
-            description:
-              "问题的唯一标识名称，用于从返回结果中提取输入的数字，例如 'port'、'retryCount'",
-          },
           message: {
             type: 'string',
             description:
@@ -214,17 +154,17 @@ const descriptions = [
           opt: {
             type: 'object',
             description:
-              'inquirer额外配置选项对象，可选。支持的字段包括：validate（校验函数，接收输入值返回true或错误提示字符串，可用于限制数值范围）、filter（过滤函数，对输入数字进行转换）、when（条件函数）等',
+              'inquirer额外配置选项对象，可选。支持的字段包括：validate（校验函数，可用于限制数值范围）、filter（过滤函数）、when（条件函数）等',
           },
         },
-        required: ['name', 'message'],
+        required: ['message'],
       },
     },
   },
   {
     type: 'function',
     function: {
-      name: 'askAny',
+      name: 'inquirerAny',
       description:
         '用户交互：直接调用inquirer.prompt()的通用封装，接受自定义问题对象数组，支持一次提出多个问题进行连续交互，返回包含所有答案的对象（{问题name: 对应答案}）。参数说明(不是对象参数)：questions-inquirer问题对象数组，每个对象包含type（问题类型：input/confirm/list/checkbox/password/editor/rawlist/expand）、name（标识名称）、message（提示文本）及可选的default、choices、validate、filter、when等字段。',
       parameters: {
@@ -277,11 +217,11 @@ const descriptions = [
 ]
 
 const functions = {
-  askConfirm,
-  askList,
-  askInput,
-  askNumber,
-  askAny,
+  inquirerConfirm,
+  inquirerList,
+  inquirerInput,
+  inquirerNumber,
+  inquirerAny,
 }
 
 module.exports = {

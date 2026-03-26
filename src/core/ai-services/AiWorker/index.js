@@ -2,12 +2,13 @@
  * @Author: Roman 306863030@qq.com
  * @Date: 2026-03-16 09:18:05
  * @LastEditors: Roman 306863030@qq.com
- * @LastEditTime: 2026-03-26 11:42:15
+ * @LastEditTime: 2026-03-26 14:49:34
  * @FilePath: \deepfish\src\core\ai-services\AiWorker\index.js
  * @Description: 工作流类
  * @
  */
 const { GlobalVariable } = require('../../globalVariable')
+const { askConfirm } = require('../../utils/log')
 const AiAgent = require('./AiAgent')
 const {
   getInitialMessages,
@@ -66,9 +67,24 @@ class AiWorker {
       this.aiCli.extensionManager.extensions,
       3
     )
-    const initMessages = await getInitialMessagesForTask(this.messages, goal)
+    // 先读取历史任务上下文
+    let subTaskMessages = this.historyManager.getMessage(3)
+    if (subTaskMessages && subTaskMessages.length) {
+      // 询问用户是否继续上次未完成的任务
+      const answer = await askConfirm(`检测到上次未完成的任务，是否继续执行？`)
+      if (answer) {
+        this.clearUserMessage(subTaskMessages)
+      } else {
+        this.historyManager.clearMessage(3)
+        subTaskMessages = await getInitialMessagesForTask(this.messages, goal)
+      }
+    } else {
+      subTaskMessages = await getInitialMessagesForTask(this.messages, goal)
+    }
     GlobalVariable.historyManager.log(`开始执行Skill Agent, 任务目标：${goal}`)
-    const res = await aiAgent.work(initMessages)
+    const res = await aiAgent.work(subTaskMessages)
+    // 清除子任务历史记录，避免下次执行时被加载
+    this.historyManager.clearMessage(3)
     GlobalVariable.historyManager.log(`Skill Agent执行完毕, 任务${goal}已完成`)
     return res
   }
