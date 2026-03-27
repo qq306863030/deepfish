@@ -2,15 +2,17 @@
  * @Author: Roman 306863030@qq.com
  * @Date: 2026-03-16 09:18:05
  * @LastEditors: Roman 306863030@qq.com
- * @LastEditTime: 2026-03-26 19:32:11
+ * @LastEditTime: 2026-03-27 16:17:49
  * @FilePath: \deepfish\src\core\ai-services\AiWorker\AiAgent.js
  * @Description: 工作流循环
  * @
  */
 
+const { GlobalVariable } = require('../../globalVariable')
 const { logError, logInfo, loading } = require('../../utils/log')
 const AIMessageManager = require('./AIMessageManager')
 const { aiRequestByTools } = require('./AiTools')
+const { v4: uuidv4 } = require('uuid')
 
 class AiAgent {
   messages
@@ -24,6 +26,7 @@ class AiAgent {
     extensionTools = { descriptions: [], functions: {} },
     messageType = 1
   ) {
+    this.id = uuidv4()
     this.aiClient = aiClient
     this.config = config
     this.aiConfig = aiConfig
@@ -38,6 +41,9 @@ class AiAgent {
 
   // 工作流循环
   async work(messages) {
+    const name = this.messageType === 1? 'Main Task' : 'Sub Task'
+    const workId = uuidv4()
+    GlobalVariable.historyManager.logTime(workId, `${name} AI Agent`)
     this.aiMessageManager.reLinkMsgs(messages)
     let maxIterations = this.maxIterations
     let loadingStop
@@ -76,6 +82,7 @@ class AiAgent {
           break
         }
       }
+      GlobalVariable.historyManager.logTime(workId, `${name} AI Agent`)
       return messages[messages.length - 1]?.content || ''
     } catch (error) {
       if (loadingStop) {
@@ -86,6 +93,7 @@ class AiAgent {
       } else {
         logError('AI process terminated unexpectedly: ' + error.message)
       }
+      GlobalVariable.historyManager.logTime(workId, `${name} AI Agent`)
       throw error
     }
   }

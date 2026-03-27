@@ -2,7 +2,7 @@
  * @Author: Roman 306863030@qq.com
  * @Date: 2026-03-17 09:12:22
  * @LastEditors: Roman 306863030@qq.com
- * @LastEditTime: 2026-03-26 15:27:15
+ * @LastEditTime: 2026-03-27 15:38:26
  * @FilePath: \deepfish\src\core\ai-services\AiWorker\AiTools.js
  * @Description: 对话初始化、对话请求
  * @
@@ -284,8 +284,10 @@ async function _streamToNonStream(stream) {
       if (!finalResponse.model) {
         finalResponse.model = chunk.model || 'deepseek-reasoner'
       }
-
       const choice = chunk.choices[0]
+      if (!choice) {
+        continue
+      }
       const delta = choice.delta
       if (!delta) {
         continue

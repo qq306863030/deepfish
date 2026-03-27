@@ -2,7 +2,7 @@
  * @Author: Roman 306863030@qq.com
  * @Date: 2026-03-16 09:18:05
  * @LastEditors: Roman 306863030@qq.com
- * @LastEditTime: 2026-03-26 15:19:36
+ * @LastEditTime: 2026-03-27 16:15:37
  * @FilePath: \deepfish\src\cli\HistoryManager.js
  * @Description: 对话历史记录、恢复
  * @
@@ -12,7 +12,7 @@ const path = require('path')
 const dayjs = require('dayjs')
 const { GlobalVariable } = require('../core/globalVariable')
 const { v4: uuidv4 } = require('uuid')
-const { logSuccess, logError } = require('../core/utils/log')
+const { logSuccess, logError, logInfo } = require('../core/utils/log')
 const { openDirectory } = require('../core/utils/normal')
 // cache => [history.json, id => [message.json, logs => [log.txt]]]
 // messageType:1.主会话 2.子会话（每次开始前自动清空上下文） 3.子任务会话（任务开始前，自动加载会话历史，或加载主会话历史）
@@ -27,6 +27,7 @@ class HistoryManager {
     this.taskMessagePath = null // 任务会话历史记录
     this.id = null
     this.logDir = null
+    this.logTimeMap = new Map()
     GlobalVariable.historyManager = this
     this.initRecord()
   }
@@ -257,6 +258,18 @@ class HistoryManager {
     } catch (error) {
       console.error('Failed to record:', error.message)
       return false
+    }
+  }
+
+  logTime(id, description = '') {
+    if (this.logTimeMap.has(id)) {
+      const startTime = this.logTimeMap.get(id)
+      const duration = dayjs().diff(startTime, 'second')
+      this.logTimeMap.delete(id)
+      logInfo(`${description} Execution time: ${duration} seconds`)
+      this.log(`${description} Execution time: ${duration} seconds`)
+    } else {
+      this.logTimeMap.set(id, dayjs())
     }
   }
 
