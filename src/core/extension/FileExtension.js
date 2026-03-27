@@ -2,159 +2,159 @@
  * @Author: Roman 306863030@qq.com
  * @Date: 2026-03-17 11:59:19
  * @LastEditors: Roman 306863030@qq.com
- * @LastEditTime: 2026-03-20 16:52:45
+ * @LastEditTime: 2026-03-27 13:12:59
  * @FilePath: \deepfish\src\core\extension\FileExtension.js
  * @Description: 文件处理扩展函数
  * @
  */
-const path = require("path");
-const fs = require("fs-extra");
+const path = require('path')
+const fs = require('fs-extra')
 
 async function createFile(filePath, content) {
   try {
-    const fullPath = path.resolve(process.cwd(), filePath);
-    const dirPath = path.dirname(fullPath);
+    const fullPath = path.resolve(process.cwd(), filePath)
+    const dirPath = path.dirname(fullPath)
 
     if (!fs.existsSync(dirPath)) {
-      fs.mkdirSync(dirPath, { recursive: true });
+      fs.mkdirSync(dirPath, { recursive: true })
     }
-    fs.writeFileSync(fullPath, content);
-    return true;
+    fs.writeFileSync(fullPath, content)
+    return true
   } catch (error) {
-    return false;
+    return false
   }
 }
 
 async function modifyFile(filePath, content) {
   try {
-    const fullPath = path.resolve(process.cwd(), filePath);
+    const fullPath = path.resolve(process.cwd(), filePath)
 
     if (!fs.existsSync(fullPath)) {
-      return false;
+      return false
     }
 
-    fs.writeFileSync(fullPath, content);
-    return true;
+    fs.writeFileSync(fullPath, content)
+    return true
   } catch (error) {
-    return false;
+    return false
   }
 }
 
 async function readFile(filePath) {
   try {
-    const fullPath = path.resolve(process.cwd(), filePath);
+    const fullPath = path.resolve(process.cwd(), filePath)
 
     if (!fs.existsSync(fullPath)) {
-      return null;
+      return null
     }
 
-    const content = fs.readFileSync(fullPath, "utf8");
-    return content;
+    const content = fs.readFileSync(fullPath, 'utf8')
+    return content
   } catch (error) {
-    return null;
+    return null
   }
 }
 
 async function appendToFile(filePath, content) {
   try {
-    const fullPath = path.resolve(process.cwd(), filePath);
+    const fullPath = path.resolve(process.cwd(), filePath)
 
     if (!fs.existsSync(fullPath)) {
-      return false;
+      return false
     }
 
-    fs.appendFileSync(fullPath, content);
-    return true;
+    fs.appendFileSync(fullPath, content)
+    return true
   } catch (error) {
-    return false;
+    return false
   }
 }
 
 function fileExists(filePath) {
-  const fullPath = path.resolve(process.cwd(), filePath);
-  return fs.existsSync(fullPath);
+  const fullPath = path.resolve(process.cwd(), filePath)
+  return fs.existsSync(fullPath)
 }
 
 async function createDirectory(dirPath) {
   try {
-    const fullPath = path.resolve(process.cwd(), dirPath);
+    const fullPath = path.resolve(process.cwd(), dirPath)
     if (!fs.existsSync(fullPath)) {
-      fs.mkdirSync(fullPath, { recursive: true });
+      fs.mkdirSync(fullPath, { recursive: true })
     }
-    return true;
+    return true
   } catch (error) {
-    return false;
+    return false
   }
 }
 
 async function deleteFile(filePath) {
   try {
-    const fullPath = path.resolve(process.cwd(), filePath);
+    const fullPath = path.resolve(process.cwd(), filePath)
 
     if (fs.existsSync(fullPath)) {
-      fs.unlinkSync(fullPath);
+      fs.unlinkSync(fullPath)
     }
-    return true;
+    return true
   } catch (error) {
-    return false;
+    return false
   }
 }
 
 async function deleteDirectory(dirPath) {
   try {
-    const fullPath = path.resolve(process.cwd(), dirPath);
+    const fullPath = path.resolve(process.cwd(), dirPath)
 
     if (fs.existsSync(fullPath)) {
-      fs.rmSync(fullPath, { recursive: true, force: true });
+      fs.rmSync(fullPath, { recursive: true, force: true })
     }
-    return true;
+    return true
   } catch (error) {
-    return false;
+    return false
   }
 }
 
 async function rename(oldPath, newPath) {
   try {
-    const fullOldPath = path.resolve(process.cwd(), oldPath);
-    const fullNewPath = path.resolve(process.cwd(), newPath);
+    const fullOldPath = path.resolve(process.cwd(), oldPath)
+    const fullNewPath = path.resolve(process.cwd(), newPath)
 
     if (fs.existsSync(fullOldPath)) {
-      fs.renameSync(fullOldPath, fullNewPath);
+      fs.renameSync(fullOldPath, fullNewPath)
     }
-    return true;
+    return true
   } catch (error) {
-    return false;
+    return false
   }
 }
 
 async function moveFile(sourcePath, destinationPath) {
   try {
-    const fullSourcePath = path.resolve(process.cwd(), sourcePath);
-    const fullDestPath = path.resolve(process.cwd(), destinationPath);
-    const destDirPath = path.dirname(fullDestPath);
+    const fullSourcePath = path.resolve(process.cwd(), sourcePath)
+    const fullDestPath = path.resolve(process.cwd(), destinationPath)
+    const destDirPath = path.dirname(fullDestPath)
 
     if (!fs.existsSync(destDirPath)) {
-      fs.mkdirSync(destDirPath, { recursive: true });
+      fs.mkdirSync(destDirPath, { recursive: true })
     }
 
     if (fs.existsSync(fullSourcePath)) {
-      fs.renameSync(fullSourcePath, fullDestPath);
+      fs.renameSync(fullSourcePath, fullDestPath)
     }
-    return true;
+    return true
   } catch (error) {
-    return false;
+    return false
   }
 }
 
 async function getFileInfo(filePath) {
   try {
-    const fullPath = path.resolve(process.cwd(), filePath);
+    const fullPath = path.resolve(process.cwd(), filePath)
 
     if (!fs.existsSync(fullPath)) {
-      return null;
+      return null
     }
 
-    const stats = fs.statSync(fullPath);
+    const stats = fs.statSync(fullPath)
     return {
       path: fullPath,
       size: stats.size,
@@ -163,257 +163,255 @@ async function getFileInfo(filePath) {
       ctime: stats.ctime,
       isFile: stats.isFile(),
       isDirectory: stats.isDirectory(),
-    };
+    }
   } catch (error) {
-    return null;
+    return null
   }
 }
 
 async function getFileNameList(dirPath) {
   try {
-    const fullPath = path.resolve(process.cwd(), dirPath);
+    const fullPath = path.resolve(process.cwd(), dirPath)
     if (!fs.existsSync(fullPath) || !fs.statSync(fullPath).isDirectory()) {
-      return [];
+      return []
     }
-    const files = fs
-      .readdirSync(fullPath)
-      .filter((file) => file !== "ai-history" && file !== "ai-log");
-    return files;
+    const files = fs.readdirSync(fullPath)
+    return files
   } catch (error) {
-    return [];
+    return []
   }
 }
 
 async function clearDirectory(dirPath) {
   try {
-    const fullPath = path.resolve(process.cwd(), dirPath);
+    const fullPath = path.resolve(process.cwd(), dirPath)
 
     if (!fs.existsSync(fullPath)) {
-      return false;
+      return false
     }
 
     if (!fs.statSync(fullPath).isDirectory()) {
-      return false;
+      return false
     }
 
-    const files = fs.readdirSync(fullPath);
+    const files = fs.readdirSync(fullPath)
 
     for (const file of files) {
-      const filePath = path.join(fullPath, file);
+      const filePath = path.join(fullPath, file)
       if (fs.statSync(filePath).isDirectory()) {
-        fs.rmSync(filePath, { recursive: true, force: true });
+        fs.rmSync(filePath, { recursive: true, force: true })
       } else {
-        fs.unlinkSync(filePath);
+        fs.unlinkSync(filePath)
       }
     }
 
-    return true;
+    return true
   } catch (error) {
-    return false;
+    return false
   }
 }
 
 const descriptions = [
   {
-    type: "function",
+    type: 'function',
     function: {
-      name: "createFile",
+      name: 'createFile',
       description:
-        "创建一个包含指定内容的新文件，返回布尔值表示操作是否成功。如果目录不存在会自动创建目录结构。",
+        '创建一个包含指定内容的新文件，返回布尔值表示操作是否成功。如果目录不存在会自动创建目录结构。',
       parameters: {
-        type: "object",
+        type: 'object',
         properties: {
-          filePath: { type: "string" },
-          content: { type: "string" },
+          filePath: { type: 'string' },
+          content: { type: 'string' },
         },
-        required: ["filePath", "content"],
+        required: ['filePath', 'content'],
       },
     },
   },
   {
-    type: "function",
+    type: 'function',
     function: {
-      name: "modifyFile",
+      name: 'modifyFile',
       description:
-        "修改指定文件的内容，返回布尔值表示操作是否成功。如果文件不存在则返回false。",
+        '修改指定文件的内容，返回布尔值表示操作是否成功。如果文件不存在则返回false。',
       parameters: {
-        type: "object",
+        type: 'object',
         properties: {
-          filePath: { type: "string" },
-          content: { type: "string" },
+          filePath: { type: 'string' },
+          content: { type: 'string' },
         },
-        required: ["filePath", "content"],
+        required: ['filePath', 'content'],
       },
     },
   },
   {
-    type: "function",
+    type: 'function',
     function: {
-      name: "readFile",
+      name: 'readFile',
       description:
-        "读取指定文件的内容，返回文件内容字符串。如果文件不存在或读取失败则返回null。",
+        '读取指定文件的内容，返回文件内容字符串。如果文件不存在或读取失败则返回null。',
       parameters: {
-        type: "object",
+        type: 'object',
         properties: {
-          filePath: { type: "string" },
+          filePath: { type: 'string' },
         },
-        required: ["filePath"],
+        required: ['filePath'],
       },
     },
   },
   {
-    type: "function",
+    type: 'function',
     function: {
-      name: "appendToFile",
+      name: 'appendToFile',
       description:
-        "向指定文件追加内容，返回布尔值表示操作是否成功。如果文件不存在则返回false。",
+        '向指定文件追加内容，返回布尔值表示操作是否成功。如果文件不存在则返回false。',
       parameters: {
-        type: "object",
+        type: 'object',
         properties: {
-          filePath: { type: "string" },
-          content: { type: "string" },
+          filePath: { type: 'string' },
+          content: { type: 'string' },
         },
-        required: ["filePath", "content"],
+        required: ['filePath', 'content'],
       },
     },
   },
   {
-    type: "function",
+    type: 'function',
     function: {
-      name: "fileExists",
-      description: "检查指定文件是否存在，返回布尔值。",
+      name: 'fileExists',
+      description: '检查指定文件是否存在，返回布尔值。',
       parameters: {
-        type: "object",
+        type: 'object',
         properties: {
-          filePath: { type: "string" },
+          filePath: { type: 'string' },
         },
-        required: ["filePath"],
+        required: ['filePath'],
       },
     },
   },
   {
-    type: "function",
+    type: 'function',
     function: {
-      name: "createDirectory",
+      name: 'createDirectory',
       description:
-        "创建一个新目录，返回布尔值表示操作是否成功。支持递归创建目录结构。",
+        '创建一个新目录，返回布尔值表示操作是否成功。支持递归创建目录结构。',
       parameters: {
-        type: "object",
+        type: 'object',
         properties: {
-          dirPath: { type: "string" },
+          dirPath: { type: 'string' },
         },
-        required: ["dirPath"],
+        required: ['dirPath'],
       },
     },
   },
   {
-    type: "function",
+    type: 'function',
     function: {
-      name: "deleteFile",
+      name: 'deleteFile',
       description:
-        "删除指定文件，返回布尔值表示操作是否成功。如果文件不存在也会返回true。",
+        '删除指定文件，返回布尔值表示操作是否成功。如果文件不存在也会返回true。',
       parameters: {
-        type: "object",
+        type: 'object',
         properties: {
-          filePath: { type: "string" },
+          filePath: { type: 'string' },
         },
-        required: ["filePath"],
+        required: ['filePath'],
       },
     },
   },
   {
-    type: "function",
+    type: 'function',
     function: {
-      name: "deleteDirectory",
+      name: 'deleteDirectory',
       description:
-        "删除指定目录，返回布尔值表示操作是否成功。支持递归删除目录及其内容。如果目录不存在也会返回true。",
+        '删除指定目录，返回布尔值表示操作是否成功。支持递归删除目录及其内容。如果目录不存在也会返回true。',
       parameters: {
-        type: "object",
+        type: 'object',
         properties: {
-          dirPath: { type: "string" },
+          dirPath: { type: 'string' },
         },
-        required: ["dirPath"],
+        required: ['dirPath'],
       },
     },
   },
   {
-    type: "function",
+    type: 'function',
     function: {
-      name: "rename",
+      name: 'rename',
       description:
-        "重命名文件或目录，返回布尔值表示操作是否成功。如果原文件不存在也会返回true。",
+        '重命名文件或目录，返回布尔值表示操作是否成功。如果原文件不存在也会返回true。',
       parameters: {
-        type: "object",
+        type: 'object',
         properties: {
-          oldPath: { type: "string" },
-          newPath: { type: "string" },
+          oldPath: { type: 'string' },
+          newPath: { type: 'string' },
         },
-        required: ["oldPath", "newPath"],
+        required: ['oldPath', 'newPath'],
       },
     },
   },
   {
-    type: "function",
+    type: 'function',
     function: {
-      name: "moveFile",
+      name: 'moveFile',
       description:
-        "移动文件，返回布尔值表示操作是否成功。如果目标目录不存在会自动创建。如果源文件不存在也会返回true。",
+        '移动文件，返回布尔值表示操作是否成功。如果目标目录不存在会自动创建。如果源文件不存在也会返回true。',
       parameters: {
-        type: "object",
+        type: 'object',
         properties: {
-          sourcePath: { type: "string" },
-          destinationPath: { type: "string" },
+          sourcePath: { type: 'string' },
+          destinationPath: { type: 'string' },
         },
-        required: ["sourcePath", "destinationPath"],
+        required: ['sourcePath', 'destinationPath'],
       },
     },
   },
   {
-    type: "function",
+    type: 'function',
     function: {
-      name: "getFileInfo",
+      name: 'getFileInfo',
       description:
-        "获取指定文件的信息，返回文件信息对象。如果文件不存在或获取失败则返回null。返回对象包含path、size、birthtime、mtime、ctime、isFile、isDirectory等属性。",
+        '获取指定文件的信息，返回文件信息对象。如果文件不存在或获取失败则返回null。返回对象包含path、size、birthtime、mtime、ctime、isFile、isDirectory等属性。',
       parameters: {
-        type: "object",
+        type: 'object',
         properties: {
-          filePath: { type: "string" },
+          filePath: { type: 'string' },
         },
-        required: ["filePath"],
+        required: ['filePath'],
       },
     },
   },
   {
-    type: "function",
+    type: 'function',
     function: {
-      name: "getFileNameList",
+      name: 'getFileNameList',
       description:
-        "获取指定目录下的所有文件名，返回文件名数组。如果目录不存在或不是目录则返回空数组。",
+        '获取指定目录下的所有文件名，返回文件名数组。如果目录不存在或不是目录则返回空数组。',
       parameters: {
-        type: "object",
+        type: 'object',
         properties: {
-          dirPath: { type: "string" },
+          dirPath: { type: 'string' },
         },
-        required: ["dirPath"],
+        required: ['dirPath'],
       },
     },
   },
   {
-    type: "function",
+    type: 'function',
     function: {
-      name: "clearDirectory",
+      name: 'clearDirectory',
       description:
-        "清空指定目录的内容，返回布尔值表示操作是否成功。如果目录不存在或不是目录则返回false。",
+        '清空指定目录的内容，返回布尔值表示操作是否成功。如果目录不存在或不是目录则返回false。',
       parameters: {
-        type: "object",
+        type: 'object',
         properties: {
-          dirPath: { type: "string" },
+          dirPath: { type: 'string' },
         },
-        required: ["dirPath"],
+        required: ['dirPath'],
       },
     },
   },
-];
+]
 
 const functions = {
   createFile,
@@ -429,11 +427,12 @@ const functions = {
   getFileInfo,
   getFileNameList,
   clearDirectory,
-};
+}
 
 module.exports = {
   name: 'FileExtension',
-  extensionDescription: "提供文件和目录的创建、读取、修改、删除、移动、重命名、信息获取等文件系统操作功能",
+  extensionDescription:
+    '提供文件和目录的创建、读取、修改、删除、移动、重命名、信息获取等文件系统操作功能',
   descriptions,
   functions,
-};
+}

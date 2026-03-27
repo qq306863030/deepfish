@@ -45,16 +45,17 @@ async function generateExtensionRule(goal) {
 2. package.json配置：
    - name字段值：与项目名称一致，即"deepfish-「项目功能名称」"
    - version字段值：初始版本设置为1.0.0
-   - description字段值：简要描述该项目的核心功能和价值
+   - description字段值：用专业英文简要描述该项目的核心功能和价值, 以"A DeepFish AI extension tool for"开头
    - git仓库地址：固定为 https://github.com/qq306863030/deepfish-extensions.git
    - author设置为"DeepFish AI"
    - type字段设置为"commonjs"，确保模块系统兼容
-3. 主文件：项目入口文件必须命名为index.js
-4. 子文件：复杂的逻辑可以拆分到其他.js文件中
-5. 文档文件：项目根目录需新增2个文档文件：
-   - README_CN.md（中文说明文档）
-   - README.md（英文说明文档）
-6. 主测试文件：test.js
+3. 文件结构
+   - 主文件：项目入口文件必须命名为index.js
+   - 子文件：复杂的逻辑可以拆分到其他.js文件中;将descriptions、functions拆分到子文件;
+   - 文档文件：项目根目录需新增2个文档文件：
+    - README_CN.md（中文说明文档）
+    - README.md（英文说明文档）
+   - 主测试文件：test.js
 
 ### 第二步：index.js 完整开发规范
 #### 2.1 核心输出要求
@@ -77,7 +78,7 @@ async function generateExtensionRule(goal) {
 5. 函数中的this.aiCli在运行时指向DeepFish AI的运行时环境，可以通过this.aiCli访问到AI配置、工具函数等资源
 6. 尽量保持代码思路清晰，避免过度复杂的逻辑嵌套，必要时可以适当拆分函数、添加注释说明或拆分成多个文件
 7. 需要创建的是DeepFish AI的扩展工具，并非创建Skill工具包，因此不需要编写SKILL.md文件
-8. 对于复杂的的扩展功能，需要在functions中输出一个说明函数，只需返回一个markdown类型的字符串，专门用于解释当前扩展工具的使用方法、参数说明、示例等内容，函数名称为「extensionRule」，如「systemFileManagement_extensionRule」。
+8. 对于复杂的的扩展功能，需要在functions中输出一个说明函数，只需返回一个markdown类型的字符串，专门用于解释当前扩展工具的使用方法、参数说明、示例等内容，函数名称为「extensionRule」，如「systemFileManagement_extensionRule」；函数描述需要强调调用该扩展模块前必须先阅读该规则文档。
 
 #### 2.3 基础代码模板（必须遵循）
 const descriptions = []
@@ -89,7 +90,19 @@ module.exports = {
   functions,
 }
 
-#### 2.4 参考示例（可参考格式）
+#### 2.4 参考示例（可参考格式，展示多文件拆分结构）
+
+##### index.js（主文件）
+const descriptions = require('./descriptions')
+const functions = require('./functions')
+module.exports = {
+  name: 'systemFileManagement',
+  extensionDescription: '提供文件管理相关功能，包括文件重命名、复制等操作',
+  descriptions,
+  functions,
+}
+
+##### descriptions.js（描述子文件）
 const descriptions = [
   {
     name: 'systemFileManagement_renameFile',
@@ -102,18 +115,30 @@ const descriptions = [
       },
     },
   },
+  {
+    name: 'systemFileManagement_copyFile',
+    description: '系统文件管理:复制文件',
+    parameters: {
+      type: 'object',
+      properties: {
+        srcPath: { type: 'string', description: '源文件路径' },
+        destPath: { type: 'string', description: '目标文件路径' },
+      },
+    },
+  },
 ]
+module.exports = descriptions
+
+##### functions.js（函数子文件）
 const functions = {
-  systemFileManagement_renameFile: (oldPath, newPath) => {
+  systemFileManagement_renameFile: function(oldPath, newPath) {
     return this.aiCli.Tools.rename(oldPath, newPath)
-  }
+  },
+  systemFileManagement_copyFile: function(srcPath, destPath) {
+    return this.aiCli.Tools.copyFile(srcPath, destPath)
+  },
 }
-module.exports = {
-  name: 'systemFileManagement',
-  extensionDescription: '提供文件管理相关功能，包括文件重命名等操作',
-  descriptions,
-  functions,
-}
+module.exports = functions
 
 ### 第三步：测试规则
 1. 测试目标：至少覆盖扩展中的核心函数（建议覆盖每个对外函数），验证“正常输入可用、关键边界可处理、异常输入有明确反馈”。
