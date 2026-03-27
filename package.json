@@ -33,6 +33,7 @@
   },
   "homepage": "https://github.com/qq306863030/deepfish-ai#readme",
   "dependencies": {
+    "adm-zip": "^0.5.16",
     "axios": "^1.13.5",
     "chalk": "^4.1.0",
     "chardet": "^2.1.1",

@@ -2,13 +2,14 @@
  * @Author: Roman 306863030@qq.com
  * @Date: 2026-03-17 11:59:19
  * @LastEditors: Roman 306863030@qq.com
- * @LastEditTime: 2026-03-27 13:12:59
+ * @LastEditTime: 2026-03-27 18:52:12
  * @FilePath: \deepfish\src\core\extension\FileExtension.js
  * @Description: 文件处理扩展函数
  * @
  */
 const path = require('path')
 const fs = require('fs-extra')
+const AdmZip = require('adm-zip');
 
 async function createFile(filePath, content) {
   try {
@@ -52,6 +53,30 @@ async function readFile(filePath) {
     return content
   } catch (error) {
     return null
+  }
+}
+
+/**
+ * 替换文件中的文本内容
+ * @param {string} filePath 要处理的文件路径
+ * @param {string|RegExp} searchValue 要查找的文本或正则表达式
+ * @param {string} replaceValue 替换后的文本内容
+ * @param {boolean} [isGlobal=true] 是否进行全局替换，默认开启
+ * @returns {Promise<boolean>} 操作是否成功，成功返回 true，失败返回 false
+ */
+async function replaceFileText(filePath, searchValue, replaceValue, isGlobal = true) {
+  try {
+    const content = await readFile(filePath);
+    const replacedContent = content.replace(
+      typeof searchValue === 'string' 
+        ? new RegExp(searchValue, isGlobal ? 'g' : '') 
+        : searchValue,
+      replaceValue
+    );
+    await modifyFile(filePath, replacedContent);
+    return true;
+  } catch (error) {
+    return false;
   }
 }
 
@@ -207,6 +232,55 @@ async function clearDirectory(dirPath) {
 
     return true
   } catch (error) {
+    return false
+  }
+}
+
+/**
+ * 【跨平台】压缩 文件/文件夹 为 zip（支持中文、多层目录）
+ * @param {string} inputPath 要压缩的文件或文件夹路径
+ * @param {string} outputZipPath 输出的 zip 路径
+ * @returns {Promise<boolean>} 操作是否成功，成功返回 true，失败返回 false
+ */
+async function compressToZip(inputPath, outputZipPath) {
+  try {
+    // 检查源路径是否存在
+    await fs.access(inputPath);
+    const zip = new AdmZip();
+    const absoluteInput = path.resolve(inputPath);
+    // 判断是文件还是文件夹
+    const stats = await fs.stat(absoluteInput);
+    if (stats.isDirectory()) {
+      // 压缩文件夹（递归添加所有子文件）
+      zip.addLocalFolder(absoluteInput);
+    } else {
+      // 压缩单个文件
+      zip.addLocalFile(absoluteInput);
+    }
+    // 写入 zip 文件
+    await zip.writeZipPromise(outputZipPath);
+    return true
+  } catch (err) {
+    return false
+  }
+}
+
+/**
+ * 【跨平台】解压 zip 文件（支持密码、中文不乱码）
+ * @param {string} zipFilePath zip 文件路径
+ * @param {string} extractToPath 解压到哪个文件夹
+ * @returns {Promise<boolean>} 操作是否成功，成功返回 true，失败返回 false
+ */
+async function extractZip(zipFilePath, extractToPath) {
+  try {
+    await fs.access(zipFilePath);
+    const zip = new AdmZip(zipFilePath);
+    // 自动创建目标目录
+    await fs.mkdir(extractToPath, { recursive: true });
+    // 解压所有文件
+    zip.extractAllTo(extractToPath, true);
+    return true
+  } catch (err) {
     return false
   }
 }
@@ -411,12 +485,87 @@ const descriptions = [
       },
     },
   },
+  {
+    type: 'function',
+    function: {
+      name: 'replaceFileText',
+      description:
+        '替换文件中的文本。`filePath` 为目标文件路径，`searchValue` 为要查找的文本或正则表达式字符串，`replaceValue` 为替换内容，`isGlobal` 控制是否全局替换(只对searchValue为文本时有效)。返回布尔值，成功返回true，失败返回false。',
+      parameters: {
+        type: 'object',
+        properties: {
+          filePath: {
+            type: 'string',
+            description: '目标文件路径。',
+          },
+          searchValue: {
+            type: 'string',
+            description: '要查找的文本内容，支持按普通字符串或正则表达式字符串理解。',
+          },
+          replaceValue: {
+            type: 'string',
+            description: '用于替换匹配内容的新文本。',
+          },
+          isGlobal: {
+            type: 'boolean',
+            description: '是否执行全局替换，默认值为 true。',
+          },
+        },
+        required: ['filePath', 'searchValue', 'replaceValue'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'compressToZip',
+      description:
+        '压缩文件或文件夹为 zip 格式。`inputPath` 为待压缩的文件或目录路径，`outputZipPath` 为输出 zip 文件路径。返回布尔值，成功返回true，失败返回false。支持中文、多层目录。',
+      parameters: {
+        type: 'object',
+        properties: {
+          inputPath: {
+            type: 'string',
+            description: '要压缩的文件或文件夹路径。',
+          },
+          outputZipPath: {
+            type: 'string',
+            description: '生成的 zip 文件输出路径。',
+          },
+        },
+        required: ['inputPath', 'outputZipPath'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'extractZip',
+      description:
+        '解压 zip 文件。`zipFilePath` 为待解压的 zip 文件路径，`extractToPath` 为解压目标目录。返回布尔值，成功返回true，失败返回false。支持密码、中文不乱码。',
+      parameters: {
+        type: 'object',
+        properties: {
+          zipFilePath: {
+            type: 'string',
+            description: '待解压的 zip 文件路径。',
+          },
+          extractToPath: {
+            type: 'string',
+            description: '解压后的目标目录路径。',
+          },
+        },
+        required: ['zipFilePath', 'extractToPath'],
+      },
+    },
+  },
 ]
 
 const functions = {
   createFile,
   modifyFile,
   readFile,
+  replaceFileText,
   appendToFile,
   fileExists,
   createDirectory,
@@ -427,6 +576,8 @@ const functions = {
   getFileInfo,
   getFileNameList,
   clearDirectory,
+  compressToZip,
+  extractZip,
 }
 
 module.exports = {
