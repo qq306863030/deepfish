@@ -78,7 +78,7 @@ async function generateExtensionRule(goal) {
 5. 函数中的this.aiCli在运行时指向DeepFish AI的运行时环境，可以通过this.aiCli访问到AI配置、工具函数等资源
 6. 尽量保持代码思路清晰，避免过度复杂的逻辑嵌套，必要时可以适当拆分函数、添加注释说明或拆分成多个文件
 7. 需要创建的是DeepFish AI的扩展工具，并非创建Skill工具包，因此不需要编写SKILL.md文件
-8. 对于复杂的的扩展功能，需要在functions中输出一个说明函数，只需返回一个markdown类型的英文字符串，专门用于解释当前扩展工具的使用方法、参数说明、示例等内容，函数名称为「extensionRule」，如「systemFileManagement_extensionRule」；函数描述需要强调调用该扩展模块前必须先阅读该规则文档。
+8. 对于大于5个的扩展功能，需要在functions中输出一个说明函数，只需返回一个markdown类型的英文字符串，专门用于解释当前扩展工具的使用方法、参数说明、示例等内容，函数名称为「extensionRule」，如「systemFileManagement_extensionRule」；函数描述需要强调调用该扩展模块前必须先阅读该规则文档。
 
 #### 2.3 基础代码模板（必须遵循）
 const descriptions = []
